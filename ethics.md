@@ -1,19 +1,17 @@
 ---
 layout: page
-title: Statement of Ethics
+title: Code of Ethics
 ---
 
-<p class="message">
-This experiment is about changing things for the better. It's about building community, solidifying efforts, and strengthening the control publishers, editors, agents, and writers have over our industry. 
-</p>
+*noun*
+> **1.** a standard of morals by which a group makes decisions about what is right or wrong.
 
-# What I promise:
+## What I promise:
 
-* Obey all robots.txt rules and any rules embedded in \<meta\> tags
-* Keep a level playing field and ensure all participants are treated equally
-* Minimize use of resources on analyzed sites
-* Every site crawled may opt out at any time
-
-# What I think, but can't promise yet:
-
-* Every site crawled will be asked permission before being crawled
+* I will only scrape content that is publicly available
+* I will obey all robots.txt rules and any rules embedded in \<meta\> tags
+* I will treat all participants equally
+* I will minimize use of resources on analyzed sites
+* I will exclude any site at the request of the site owner
+* I will never repost or republish content as I'm only interested in the analysis
+* I will keep a current list of all metrics used in analyzing content
