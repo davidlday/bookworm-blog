@@ -12,6 +12,9 @@ Here's a list of ways we can measure a work of fiction. Maybe they don't all app
   * Word Count
   * Sentence Count
   * Paragraph Count
+* Specific to Fiction
+  * Dialog Word Count
+  * Narrative Word Count
 * Readability Tests (in no particular order)
   * [Flesch Kinkaid Grade Level](http://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_Grade_Level#Flesch.E2.80.93Kincaid_Grade_Level)
   * [Flesch Reading Ease](http://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_test#Flesch_Reading_Ease)
