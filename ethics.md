@@ -13,5 +13,5 @@ title: Code of Ethics
 * I will treat all participants equally
 * I will minimize use of resources on analyzed sites
 * I will exclude any site at the request of the site owner
-* I will never repost or republish content as I'm only interested in the analysis
+* I will never repost or republish content without permission
 * I will keep a current list of all metrics used in analyzing content
