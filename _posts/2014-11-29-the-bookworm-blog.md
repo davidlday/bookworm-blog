@@ -1,6 +1,7 @@
 ---
 layout: post
 title: The Bookworm Blog
+comments: true
 ---
 
 I've been kicking around a project for the past couple of years that looks to explore building a better reading recommendation engine using text analytics. I've had several conversations with people from both the technology industry and the publishing industry, and I now find myself giving the same information out repeatedly. So, I'm putting this site up as a way of ensuring I'm giving out consistent information, and as a way to reduce the amount of conversation time spent in backstory.
