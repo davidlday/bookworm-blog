@@ -20,7 +20,7 @@ I analyzed roughly 3,000 stories, all publicly available on their respective web
 * [Beneath Ceaseless Skies](http://www.beneath-ceaseless-skies.com/)
 * [Buzzy Mag](http://buzzymag.com/)
 * [Clarkesworld](http://clarkesworldmagazine.com/)
-* [Daily Science Ficton](http://dailysciencefiction.com/)
+* [Daily Science Fiction](http://dailysciencefiction.com/)
 * [Lightspeed Magazine](http://www.lightspeedmagazine.com/)
 * [Nightmare Magazine](http://www.nightmare-magazine.com/)
 * [Shimmer](http://www.shimmerzine.com/)
@@ -29,7 +29,7 @@ I analyzed roughly 3,000 stories, all publicly available on their respective web
 
 How'd I pick these? I'm familiar with them in one way or another. Some I've submitted stories to while others I simply enjoy. Oh, and they had stories available publicly on their websites. Did I mention that? Anyhow, I believe they're all well respected, and while I don't think they all pay pro rates, they're close. Basically, a story placed in any of these is worth reading and probably earned the writer a pro credit.
 
-The first thing I looked at was...
+I started out exploring...
 
 # Readability
 
@@ -61,7 +61,7 @@ How much is too much? There seems to be a real answer.
 
 This was an interesting byproduct of trying to figure out POV. I was able to see how much of a story was spent in dialogue, dialogue being anything between double quotes. Not 100% accurate, and it doesn't account for dialogue written in non-standard ways or quoted words that aren't dialogue, but it's good enough for a discussion.
 
-It looks like 25% is the tipping point. Beyond that is likely too much unless the overabundance of dialogue directly contributes to the artistic aspects of the story. Here are a couple of examples:
+It looks like 25% is the tipping point. Beyond that is likely too much unless the overabundance of dialogue directly contributes to the artistic aspects of the story. Some examples:
 
 * [Writing on the Wall](http://dailysciencefiction.com/science-fiction/robots-and-computers/vaughan-stanger/writing-on-the-wall) by Vaughn Stanger
 * [Crisis on Titan](http://dailysciencefiction.com/science-fiction/future-societies/powers-smith/crisis-on-titan) by Powers-Smith
@@ -74,7 +74,7 @@ But I also wondered about words and syllables, and the things they construct. So
 
 <script type='text/javascript' src='https://public.tableausoftware.com/javascripts/api/viz_v1.js'></script><div class='tableauPlaceholder' style='width: 654px; height: 745px;'><noscript><a href='#'><img alt=' ' src='https:&#47;&#47;publicrevizit.tableausoftware.com&#47;static&#47;images&#47;Bo&#47;Bookworm-SFFHProShortStoryMarketAnalyisis&#47;WordsSentenceLength&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz' width='654' height='745' style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableausoftware.com%2F' /> <param name='site_root' value='' /><param name='name' value='Bookworm-SFFHProShortStoryMarketAnalyisis&#47;WordsSentenceLength' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;publicrevizit.tableausoftware.com&#47;static&#47;images&#47;Bo&#47;Bookworm-SFFHProShortStoryMarketAnalyisis&#47;WordsSentenceLength&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='showVizHome' value='no' /></object></div><div style='width:654px;height:22px;padding:0px 10px 0px 0px;color:black;font:normal 8pt verdana,helvetica,arial,sans-serif;'><div style='float:right; padding-right:8px;'><a href='http://www.tableausoftware.com/public/about-tableau-products?ref=https://public.tableausoftware.com/views/Bookworm-SFFHProShortStoryMarketAnalyisis/WordsSentenceLength' target='_blank'>Learn About Tableau</a></div></div>
 
-We all know about word count, but I wondered about whether there were boundaries for length of word and length of sentence. There do seem to be a patterns, but I'm not sure how relevant those patterns are to these specific magazines. These could just be the natural shape of the english language. Further, I'm not sure how actionable these would be.
+We all know about word count, but I wondered whether there were boundaries for length of word and length of sentence. There do seem to be patterns, but I'm not sure how relevant those patterns are to these specific magazines. Comparing these to some other set of documents, say stories in a completely different genre, might show some significance.
 
 # Conclusions
 
