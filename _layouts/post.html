@@ -8,6 +8,12 @@ layout: default
   {{ content }}
 </div>
 
+{% if page.comments != false %}
+    <div id="disqus_thread"></div>
+    {% include disqus_comments.html %}
+{% endif %}
+
+
 <div class="related">
   <h2>Related Posts</h2>
   <ul class="related-posts">

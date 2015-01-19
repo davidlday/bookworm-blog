@@ -15,7 +15,7 @@ description:         'An exploration of text analytics and fiction.'
 url:                 http://bookworm.davidlday.com
 baseurl:             /
 paginate:            5
-
+disqus_shortname:    bookworm-analytics
 
 # About/contact
 author:
