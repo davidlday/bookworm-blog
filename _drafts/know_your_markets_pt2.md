@@ -1,13 +1,13 @@
 ---
 layout: post
-title: Know Your Markets - Part 1
+title: Know Your Markets - Part 2
 comments: true
 ---
 
 Read Part 1 if you haven't already. It give an overview of the magazines analyzed as a whole. This post provides a breakdown and looks to see if there are differences between them. And there are.
 
 
-## Readability Smackdown
+## Readability
 
 https://public.tableausoftware.com/views/Bookworm-SFFHProShortStoryMarketAnalyisis/ReadabilityComparison?:embed=y&:display_count=no
 
