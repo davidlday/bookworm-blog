@@ -82,6 +82,6 @@ Overall, these magazines seem to show preferences for readability, point of view
 
 Don't get me wrong. I don't think adjusting to meet these preferences will make a sale. If you can't produce the art, the craft won't mean shit, but the same goes the other way around.
 
-In Part 2, I'll look at individual magazines to see if there's variation between them (hint: there is).
+In Part 2, I'll look at individual magazines to see if there are any variations between them.
 
 In Part 3, I'll discuss what's missing, what's likely wrong, and where I might go from here.
