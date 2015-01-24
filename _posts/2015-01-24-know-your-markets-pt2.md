@@ -7,7 +7,7 @@ excerpt: This post provides a breakdown of the sampled SF/F/H stories by magazin
 This is the second in a series of posts on using text analytics to understand the short story market in SF/F/H.
 
 * [Part 1](/2015/01/19/know-your-markets-pt1/) covers the market as a whole.
-* [Part 2](/) breaks down the market by the magazines I was able to sample.
+* [Part 2](/2015/01/24/know-your-markets-pt2/) breaks down the market by the magazines I was able to sample.
 * Part 3 (coming soon) looks at what's missing, what's likely wrong, and what comes next for this experiment.
 * Raw Data (also coming soon) for those who want to run their own analysis.
 
