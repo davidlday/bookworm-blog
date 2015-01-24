@@ -2,6 +2,7 @@
 layout: post
 title: Know Your Markets - Part 3
 comments: true
+excerpt: So what does all of this analysis really mean? What's missing? Are there any wrong assumptions? And what comes next for this experiment?
 ---
 
 What else can we measure:
