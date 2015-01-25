@@ -1,0 +1,122 @@
+---
+layout: page
+title: Analyzer
+comments: false
+jquery: true
+---
+        <style type="text/css">
+            textarea#storyText {
+                height: 300px;
+                width:  100%;
+            }
+
+            /* http://www.jqueryscript.net/table/jQuery-Plugin-for-Scrollable-Tables-scrolltable.html */
+            table.scrollTable {
+                width: 100%;
+                border: 1px solid #ddd;
+            }
+            thead {
+                background-color: #eee;
+            }
+            thead th {
+                text-align: center;
+                padding: 0.1em 0.3em;
+            }
+            tbody td {
+                border-top: 1px solid #eee;
+                border-right: 1px solid #eee;
+                padding: 0.1em 0.3em;
+            }
+            tbody tr.odd {
+                background-color: #f9f9f9;
+            }
+        </style>
+
+        <p>Use this form to analyze a piece of writing with the same algorithms I use. Some important points:</p>
+        <ul>
+            <li>Click once. Be patient. It takes a few seconds, and I haven't figured out how to add one of these neat spinner things to let you know it's processing.</li>
+            <li>Nothing from this is saved anywhere. Not the story; not the results. If you want to save your results, write them down or print the page.</li>
+            <li>Plain text only.</li>
+            <li>Everything between double quotes (") is considered dialogue.</li>
+            <li>Section separators (e.g. #) are ignored as long as there are no word characters used. Actually, this isn't important right now, but may be at some point.</li>
+            <li>Paragraphs are separated by a line break (return). Multiple line breaks are considered considered as one.</li>
+            <li>The formulae for the readability scores vary. What you get here may not exactly match what you get somewhere else, but it's close enough.</li>
+            <li>Don't send your novel through. This is for short stories only (say, less than 10,000 words).</li>
+        </ul>
+
+        <div id="form">
+            <form action="http://bookworm.davidlday.com/public/scripts/analyze.py" id="analysisForm">
+                <textarea id="storyText" placeholder="Paste story here..."></textarea>
+                <input type="submit" value="Analyze" />
+            </form>
+        </div>
+        <div id="results">
+<!--            <textarea id="results_text" placeholder="Results will show here."></textarea> -->
+            <table class="scrollTable" cellpadding="0" cellspacing="0" border="0" id="summaryTable">
+                <thead id="summaryTableHead">
+                    <tr><td>Measure</td><td>Value</td></tr>
+                </thead>
+                <tbody id="summaryTableBody">
+                </tbody>
+            </table>
+
+        </div>
+
+        <script>
+            // Controls what return values are displayed in the table.
+            var display_results = {
+                syllable_count: "Total Syllable Count",
+                word_count: "Total Word Count",
+                sentence_count: "Total Sentence Count",
+                avg_syllables_per_word: "Avg. Syllables per Word",
+                avg_words_per_sentence: "Avg. Words per Sentence",
+
+                dialogue_syllable_count: "Dialogue Syllable Count",
+                dialogue_word_count: "Dialogue Word Count",
+                narrative_syllable_count: "Narrative Syllable Count",
+                narrative_word_count: "Narrative Word Count",
+                dialogue_syllable_percentage: "Percent Dialogue (Syllables)",
+                dialogue_word_percentage: "Percent Dialogue (Words)",
+
+                pov: "Point of View",
+
+                coleman_liau_index: "Readability: Coleman Liau Index",
+                automated_readability_index: "Readability: Automated Readability Index",
+                flesch_kincaid_grade_level: "Readability: Flesch Kincaid Grade Level",
+                smog_index: "Readability: SMOG Index",
+                flesch_reading_ease: "Readability: Flesch Reading Ease",
+                gunning_fog_index: "Readability: Gunning Fog Index",
+                rix: "Readability: RIX",
+                lix: "Readability: LIX",
+            };
+
+            /* attach a submit handler to the form */
+            $("#analysisForm").submit(function(event) {
+                // Prevent default form submission
+                event.preventDefault();
+
+                // Wipe out prior results
+                $('#summaryTableBody').empty();
+
+                var story = $( 'textarea#storyText').val();
+                var url = $(this).attr('action');
+
+                // Invoke analysis
+                $.post(url,
+                    {text: story},
+                    function(data) {
+                        // Add results to summary table
+                        $.each(display_results, function(key, value) {
+                            $('#summaryTableBody').append(
+                                "<tr id=\"" + key + "\">" +
+                                "<td>" + value + "</td>" +
+                                "<td>" + data[key] + "</td>" +
+                                "</tr>"
+                            );
+                        });
+                    },
+                    'json'
+                );
+
+            });
+        </script>
