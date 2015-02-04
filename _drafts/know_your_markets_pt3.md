@@ -19,6 +19,8 @@ What's Wrong:
 * There's a stigma to using readability scores.
   * Almost always discussed without specific context or extremely [small sample or ambiguous size](http://mabfan.livejournal.com/105017.html)
   * Metrics were developed decades ago (cite dates for each test). Language and educational requirements have changed, but have the formulae kept up?
+  * [List2Go]() quote: While Flesch-Kincaid may be a useful tool for comparing the complexity of different passages, whether or not a given passage is appropriate for a given reader depends on several other factors, including: background knowledge of the reader, reader interest in the subject matter, text genre, and the level of support provided during reading.
+  * Readability tests are useful for comparison, but whether they accurately represent "grade levels" is questionable, and in the context of this study - irrelevant.
 * The Coleman Liau Index formula I used _may_ be wrong:
 Mine from []()
 score = (5.89*(self.analyzedVars['char_cnt']/self.analyzedVars['word_cnt']))-(30*(self.analyzedVars['sentence_cnt']/self.analyzedVars['word_cnt']))-15.8
