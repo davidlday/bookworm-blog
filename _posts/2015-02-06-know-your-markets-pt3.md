@@ -4,6 +4,14 @@ title: Know Your Markets - Part 3
 comments: true
 excerpt: So what does all of this analysis really mean? What's missing? Are there any wrong assumptions? And what comes next for this experiment?
 ---
+This is the third and last post in a series on my initial experiment in using text analytics to understand the short story market in SF/F/H.
+
+* [Part 1](/2015/01/19/know-your-markets-pt1/) covers the market as a whole.
+* [Part 2](/2015/01/24/know-your-markets-pt2/) breaks down the market by the magazines I was able to sample.
+* [Part 3](/2015/02/06/know-your-markets-pt3/) looks at what's missing, what's likely wrong, and what comes next for this experiment.
+* Raw Data (coming soon) for those who want to run their own analysis.
+
+---
 
 This is the last post for this initial experiment, but not the end by any means. I'm going to address some stuff around readability metrics, talk a little about some of the assumptions I made, and share on what comes next.
 
@@ -117,6 +125,8 @@ Since slush piles are off limits right now, I'll be working on a couple of other
 ## Story Search
 
 I'm close to having a search engine set up that'll let anyone search through the text of the stories I've analyzed. I'm being careful about how I do this, though, because I'm not going to show any part of any story on this site. Search results will provide title, author, stats, and a link to the story on the magazine's site. The engine I'm using has an option to index but not store the text, so it's not that difficult, but I'm being extra careful. As a writer, I want to make sure I'm respecting copyright, and generally, I just don't want to piss anyone off.
+
+Once I have this sorted out, I'll also add a way to download the raw stats (not the text) in CSV format for anyone who wants to run their own analysis.
 
 ## Regular Updates
 
