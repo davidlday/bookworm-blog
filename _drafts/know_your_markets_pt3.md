@@ -37,6 +37,12 @@ On [Lit2Go], a free online collection of stories and poems in Mp3 (audiobook) fo
 What [List2Go](http://etc.usf.edu/lit2go/welcome/faq/) is saying is that while Flesch-Kincaid purports to tell us what grade level a reader must be at to comprehend a text, it isn't accurate, and appropriateness of the text relies on a much broader context.
 
 
+Inconsistent:
+
+Then there's this post: ["Can You Trust Your Flesch-Kincaid Readability Scores?"](http://www.tomnunamaker.com/can-you-trust-your-flesch-kincaid-readability-scores/31124/).
+
+In short, the scores are inconsistent across tools. So if you're targeting a specific score, say 4.4, then you better make sure you're using the same tooling you used to arrive at that target.
+
 
 * There's a stigma to using readability scores.
   * Almost always discussed without specific context or extremely [small sample or ambiguous size](http://mabfan.livejournal.com/105017.html)
