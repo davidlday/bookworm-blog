@@ -76,7 +76,7 @@ Consider for a moment running the same analysis on all of the stories submitted 
 
 The bell curve for the slush pile is just a bigger version of the bell curve for the published stories. Sadly, we learn nothing.
 
-![Sock Puppet 1: No difference between rejected and accepted.]()
+![Sock Puppet 1: No difference between rejected and accepted.](/public/images/know_your_markets_pt3/sock_puppet_1.png)
 
 In this scenario, the peak and distribution match up, it's just a difference in volume. In this case the probability of being accepted is equal across the board, and this becomes pretty much useless. Sad, but quite possible.
 
@@ -84,7 +84,7 @@ In this scenario, the peak and distribution match up, it's just a difference in 
 
 The bell curve for the published stories sits inside, but to one side, of the bell curve for the slush pile. Real possibility here.
 
-![Sock Puppet 2: Accepted Stories are off to one side.]()
+![Sock Puppet 2: Accepted Stories are off to one side.](/public/images/know_your_markets_pt3/sock_puppet_2.png)
 
 In this scenario, the peak and distribution are significantly different, but still well related. The slush pile would still look like a bell curve, and the published stories would be a small curve inside and off to the side. For any given line, we could estimate how likely acceptance is by calculating the percentage of stories in that slice that were accepted. Based on my slush experience, I think this is likely the case.
 
@@ -92,7 +92,7 @@ In this scenario, the peak and distribution are significantly different, but sti
 
 There is no curve to the slush pile, but a straight slope or straight line across. Still useful, but questionable.
 
-![Sock Puppet 3: Straight as an arrow]()
+![Sock Puppet 3: Straight as an arrow](/public/images/know_your_markets_pt3/sock_puppet_3.png)
 
 Here we can still make some estimate on a story's chance of acceptance, but the straight line would make me question whether the measure is right. Seeing a nice bell curve for the published stories makes me believe there's likely also a curve for the stories that weren't accepted. Understanding why the distribution was so significantly different would be key to knowing if the results were useful.
 
@@ -100,7 +100,7 @@ Here we can still make some estimate on a story's chance of acceptance, but the 
 
 The slush pile has no definitive shape. In some places we might be able to estimate a possibility, in others we might not.
 
-![Sock Puppet 4: Crazy, crazy, slush.]()
+![Sock Puppet 4: Crazy, crazy, slush.](/public/images/know_your_markets_pt3/sock_puppet_4.png)
 
 In this case, the slush is all over the place. As with the straight line, whether or not this was really useful would need more investigation.
 
