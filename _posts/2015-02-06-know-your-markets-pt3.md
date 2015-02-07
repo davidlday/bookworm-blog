@@ -112,7 +112,7 @@ The slush pile has no definitive shape. In some places we might be able to estim
 
 In this case, the slush is all over the place. As with the straight line, whether or not this was really useful would need more investigation.
 
-Whatever the case, I think analyzing a slush pile would be a next logical step. This isn't possible right now, and may not be any time soon. I've bounced the idea of using some of these metrics to prioritize the slush pile off of a couple people, and the response has been somewhat reserved, and reasonably so. Using statistical analysis to rank the value of a story in terms of language craftis a potentially controversial idea, but really, this is exactly what slush readers do. I would never in my life suggest that statistics be used to pass final judgement, regardless of how much I love idea of computer overlords with sock puppets, but I do think we can start to gain efficiencies in processing the slush pile and shorten response times.
+Whatever the case, I think analyzing a slush pile would be a next logical step. This isn't possible right now, and may not be any time soon. I've bounced the idea of using some of these metrics to prioritize the slush pile off of a couple people, and the response has been somewhat reserved, and reasonably so. Using statistical analysis to rank the value of a story in terms of language craft is a potentially controversial idea, but really, this is exactly what slush readers do. I would never in my life suggest that statistics be used to pass final judgement, regardless of how much I love idea of computer overlords with sock puppets, but I do think we can start to gain efficiencies in processing the slush pile and shorten response times.
 
 As a writer, I like the idea of getting a response faster, and I like the idea of having some way of measuring my work against the body of work submitted to a magazine. As a slush reader, I like the idea of having a little inkling of what I'm getting into before I sit down to read a submission.
 
@@ -126,7 +126,7 @@ Since slush piles are off limits right now, I'll be working on a couple of other
 
 I'm close to having a search engine set up that'll let anyone search through the text of the stories I've analyzed. I'm being careful about how I do this, though, because I'm not going to show any part of any story on this site. Search results will provide title, author, stats, and a link to the story on the magazine's site. The engine I'm using has an option to index but not store the text, so it's not that difficult, but I'm being extra careful. As a writer, I want to make sure I'm respecting copyright, and generally, I just don't want to piss anyone off.
 
-Once I have this sorted out, I'll also add a way to download the raw stats (not the text) in CSV format for anyone who wants to run their own analysis.
+Once I have this sorted out, I'll also add a way to download the raw stats (not the text of the stories) in CSV format for anyone who wants to run their own analysis.
 
 ## Regular Updates
 
@@ -134,7 +134,7 @@ I'm also working on automating the charts so that I can run scans on a regular b
 
 ## Add More Magazines
 
-I'll also keep an eye out for more magazines to index and analyze. I'm open to suggestions, but they have to have a significant number of stories available publicly on their website. I'm focused on SF/F/H right now, but might consider expanding into other genres. Scraping stories was probably the most time consuming part of this process, so I won't make any promises on how quickly I'll add stuff, but I will keep at it.
+I'll keep an eye out for more magazines to index and analyze. I'm open to suggestions, but they have to have a significant number of stories available publicly on their website. I'm focused on SF/F/H right now, but might consider expanding into other genres. Scraping stories was probably the most time consuming part of this process, so I won't make any promises on how quickly I'll add stuff, but I will keep at it.
 
 ## <a name="analyzer"></a>Analyzer
 
