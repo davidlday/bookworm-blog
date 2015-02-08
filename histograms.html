@@ -63,7 +63,7 @@ metricsgraphics: true
                                 data: histdata[magazines[magazine]][metric],
                                 chart_type: 'histogram',
                                 width: container_width,
-                                height: 500,
+                                height: ((2 * container_width) / 3),
                                 right: 0,
                                 target: target_div,
                                 linked: true,
@@ -82,5 +82,6 @@ metricsgraphics: true
 
             });
         </script>
+        <p class="message">This is work in progress.</p>
 
         <div id="histogram_container"></div>

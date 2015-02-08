@@ -1,0 +1,79 @@
+---
+layout: page
+title: Story Search
+comments: false
+jquery: true
+---
+        <style type="text/css">
+            /* http://www.jqueryscript.net/table/jQuery-Plugin-for-Scrollable-Tables-scrolltable.html */
+            table.scrollTable {
+                width: 100%;
+                border: 1px solid #ddd;
+            }
+            thead {
+                background-color: #eee;
+            }
+            thead th {
+                text-align: center;
+                padding: 0.1em 0.3em;
+            }
+            tbody td {
+                border-top: 1px solid #eee;
+                border-right: 1px solid #eee;
+                padding: 0.1em 0.3em;
+            }
+            tbody tr.odd {
+                background-color: #f9f9f9;
+            }
+        </style>
+
+        <div id="form">
+            <form action="http://bookworm.davidlday.com/public/scripts/storysearch.py" id="searchForm">
+                <input type="text" id="searchText" placeholder="Search Stories..."></textarea>
+                <input type="submit" value="Search" />
+            </form>
+        </div>
+        <div id="results">
+            <table class="scrollTable" cellpadding="0" cellspacing="0" border="0" id="resultsTable">
+                <thead id="searchTableHead">
+                    <tr><td>Title</td><td>Author</td><td>Magazine</td><td>Relevance</td></tr>
+                </thead>
+                <tbody id="searchTableBody">
+                </tbody>
+            </table>
+
+        </div>
+
+        <script>
+            /* attach a submit handler to the form */
+            $("#searchForm").submit(function(event) {
+                // Prevent default form submission
+                event.preventDefault();
+
+                // Wipe out prior results
+                $('#searchTableBody').empty();
+
+                var query = $( 'input#searchText').val();
+                var url = $(this).attr('action');
+
+                // Invoke search
+                $.post(url,
+                    {q: query, wt: 'json', fl: '*,score', rows: '999999999'},
+                    function(data) {
+                        // Add results to summary table
+                        $.each(data.response.docs, function(index, doc) {
+                            $('#searchTableBody').append(
+                                "<tr>" +
+                                "<td><a href=\"" + doc.url + "\" target=\"_blank\">" + doc.title + "</a></td>" +
+                                "<td>" + doc.author.join("\n") + "</td>" +
+                                "<td>" + doc.magazine + "</td>" +
+                                "<td>" + doc.score + "</td>" +
+                                "</tr>"
+                            );
+                        });
+                    },
+                    'json'
+                );
+
+            });
+        </script>
