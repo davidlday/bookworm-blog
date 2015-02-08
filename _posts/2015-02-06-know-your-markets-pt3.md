@@ -4,6 +4,14 @@ title: Know Your Markets - Part 3
 comments: true
 excerpt: So what does all of this analysis really mean? What's missing? Are there any wrong assumptions? And what comes next for this experiment?
 ---
+This is the third and last post in a series on my initial experiment in using text analytics to understand the short story market in SF/F/H.
+
+* [Part 1](/2015/01/19/know-your-markets-pt1/) covers the market as a whole.
+* [Part 2](/2015/01/24/know-your-markets-pt2/) breaks down the market by the magazines I was able to sample.
+* [Part 3](/2015/02/06/know-your-markets-pt3/) looks at what's missing, what's likely wrong, and what comes next for this experiment.
+* Raw Data (coming soon) for those who want to run their own analysis.
+
+---
 
 This is the last post for this initial experiment, but not the end by any means. I'm going to address some stuff around readability metrics, talk a little about some of the assumptions I made, and share on what comes next.
 
@@ -76,7 +84,7 @@ Consider for a moment running the same analysis on all of the stories submitted 
 
 The bell curve for the slush pile is just a bigger version of the bell curve for the published stories. Sadly, we learn nothing.
 
-![Sock Puppet 1: No difference between rejected and accepted.]()
+![Sock Puppet 1: No difference between rejected and accepted.](/public/images/know_your_markets_pt3/sock_puppet_1.png)
 
 In this scenario, the peak and distribution match up, it's just a difference in volume. In this case the probability of being accepted is equal across the board, and this becomes pretty much useless. Sad, but quite possible.
 
@@ -84,7 +92,7 @@ In this scenario, the peak and distribution match up, it's just a difference in 
 
 The bell curve for the published stories sits inside, but to one side, of the bell curve for the slush pile. Real possibility here.
 
-![Sock Puppet 2: Accepted Stories are off to one side.]()
+![Sock Puppet 2: Accepted Stories are off to one side.](/public/images/know_your_markets_pt3/sock_puppet_2.png)
 
 In this scenario, the peak and distribution are significantly different, but still well related. The slush pile would still look like a bell curve, and the published stories would be a small curve inside and off to the side. For any given line, we could estimate how likely acceptance is by calculating the percentage of stories in that slice that were accepted. Based on my slush experience, I think this is likely the case.
 
@@ -92,7 +100,7 @@ In this scenario, the peak and distribution are significantly different, but sti
 
 There is no curve to the slush pile, but a straight slope or straight line across. Still useful, but questionable.
 
-![Sock Puppet 3: Straight as an arrow]()
+![Sock Puppet 3: Straight as an arrow](/public/images/know_your_markets_pt3/sock_puppet_3.png)
 
 Here we can still make some estimate on a story's chance of acceptance, but the straight line would make me question whether the measure is right. Seeing a nice bell curve for the published stories makes me believe there's likely also a curve for the stories that weren't accepted. Understanding why the distribution was so significantly different would be key to knowing if the results were useful.
 
@@ -100,11 +108,11 @@ Here we can still make some estimate on a story's chance of acceptance, but the 
 
 The slush pile has no definitive shape. In some places we might be able to estimate a possibility, in others we might not.
 
-![Sock Puppet 4: Crazy, crazy, slush.]()
+![Sock Puppet 4: Crazy, crazy, slush.](/public/images/know_your_markets_pt3/sock_puppet_4.png)
 
 In this case, the slush is all over the place. As with the straight line, whether or not this was really useful would need more investigation.
 
-Whatever the case, I think analyzing a slush pile would be a next logical step. This isn't possible right now, and may not be any time soon. I've bounced the idea of using some of these metrics to prioritize the slush pile off of a couple people, and the response has been somewhat reserved, and reasonably so. Using statistical analysis to rank the value of a story in terms of language craftis a potentially controversial idea, but really, this is exactly what slush readers do. I would never in my life suggest that statistics be used to pass final judgement, regardless of how much I love idea of computer overlords with sock puppets, but I do think we can start to gain efficiencies in processing the slush pile and shorten response times.
+Whatever the case, I think analyzing a slush pile would be a next logical step. This isn't possible right now, and may not be any time soon. I've bounced the idea of using some of these metrics to prioritize the slush pile off of a couple people, and the response has been somewhat reserved, and reasonably so. Using statistical analysis to rank the value of a story in terms of language craft is a potentially controversial idea, but really, this is exactly what slush readers do. I would never in my life suggest that statistics be used to pass final judgement, regardless of how much I love idea of computer overlords with sock puppets, but I do think we can start to gain efficiencies in processing the slush pile and shorten response times.
 
 As a writer, I like the idea of getting a response faster, and I like the idea of having some way of measuring my work against the body of work submitted to a magazine. As a slush reader, I like the idea of having a little inkling of what I'm getting into before I sit down to read a submission.
 
@@ -118,13 +126,15 @@ Since slush piles are off limits right now, I'll be working on a couple of other
 
 I'm close to having a search engine set up that'll let anyone search through the text of the stories I've analyzed. I'm being careful about how I do this, though, because I'm not going to show any part of any story on this site. Search results will provide title, author, stats, and a link to the story on the magazine's site. The engine I'm using has an option to index but not store the text, so it's not that difficult, but I'm being extra careful. As a writer, I want to make sure I'm respecting copyright, and generally, I just don't want to piss anyone off.
 
+Once I have this sorted out, I'll also add a way to download the raw stats (not the text of the stories) in CSV format for anyone who wants to run their own analysis.
+
 ## Regular Updates
 
 I'm also working on automating the charts so that I can run scans on a regular basis (probably once a month) and have a page or pages that give up-to-date stats on the magazines.
 
 ## Add More Magazines
 
-I'll also keep an eye out for more magazines to index and analyze. I'm open to suggestions, but they have to have a significant number of stories available publicly on their website. I'm focused on SF/F/H right now, but might consider expanding into other genres. Scraping stories was probably the most time consuming part of this process, so I won't make any promises on how quickly I'll add stuff, but I will keep at it.
+I'll keep an eye out for more magazines to index and analyze. I'm open to suggestions, but they have to have a significant number of stories available publicly on their website. I'm focused on SF/F/H right now, but might consider expanding into other genres. Scraping stories was probably the most time consuming part of this process, so I won't make any promises on how quickly I'll add stuff, but I will keep at it.
 
 ## <a name="analyzer"></a>Analyzer
 
