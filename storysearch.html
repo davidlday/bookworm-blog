@@ -4,76 +4,73 @@ title: Story Search
 comments: false
 jquery: true
 ---
-        <style type="text/css">
-            /* http://www.jqueryscript.net/table/jQuery-Plugin-for-Scrollable-Tables-scrolltable.html */
-            table.scrollTable {
-                width: 100%;
-                border: 1px solid #ddd;
-            }
-            thead {
-                background-color: #eee;
-            }
-            thead th {
-                text-align: center;
-                padding: 0.1em 0.3em;
-            }
-            tbody td {
-                border-top: 1px solid #eee;
-                border-right: 1px solid #eee;
-                padding: 0.1em 0.3em;
-            }
-            tbody tr.odd {
-                background-color: #f9f9f9;
-            }
-        </style>
 
-        <div id="form">
-            <form action="http://bookworm.davidlday.com/public/scripts/storysearch.py" id="searchForm">
-                <input type="text" id="searchText" placeholder="Search Stories..."></textarea>
-                <input type="submit" value="Search" />
+        <style>
+        .result p {
+            font-size: 75%;
+        }
+        </style>
+        <div id="search">
+            <form id="searchForm" action="http://bookworm.davidlday.com/public/scripts/storysearch.py" >
+                <input id="searchText" type="text" style="width: 100%" placeholder="Search Stories..." />
             </form>
         </div>
+        <div id="searchStats">
+        </div>
         <div id="results">
-            <table class="scrollTable" cellpadding="0" cellspacing="0" border="0" id="resultsTable">
-                <thead id="searchTableHead">
-                    <tr><td>Title</td><td>Author</td><td>Magazine</td><td>Relevance</td></tr>
-                </thead>
-                <tbody id="searchTableBody">
-                </tbody>
-            </table>
-
         </div>
 
         <script>
-            /* attach a submit handler to the form */
-            $("#searchForm").submit(function(event) {
-                // Prevent default form submission
-                event.preventDefault();
+            var thread = null;
 
+            function searchStories(query) {
                 // Wipe out prior results
-                $('#searchTableBody').empty();
-
-                var query = $( 'input#searchText').val();
-                var url = $(this).attr('action');
+                $('#results').empty();
+                $('#searchStats').empty();
+                $('#searchStats').append("Searching...");
+                var url = 'http://bookworm.davidlday.com/public/scripts/storysearch.py';
+                var date_options = {year: "numeric", month: "long", day: "numeric"};
 
                 // Invoke search
                 $.post(url,
                     {q: query, wt: 'json', fl: '*,score', rows: '999999999'},
                     function(data) {
-                        // Add results to summary table
+                        // Update results stats
+                        $('#searchStats').empty();
+                        $('#searchStats').append(
+                            "Found " + data.response.numFound + " stories.<hr />"
+                        );
+                        // Add results
                         $.each(data.response.docs, function(index, doc) {
-                            $('#searchTableBody').append(
-                                "<tr>" +
-                                "<td><a href=\"" + doc.url + "\" target=\"_blank\">" + doc.title + "</a></td>" +
-                                "<td>" + doc.author.join("\n") + "</td>" +
-                                "<td>" + doc.magazine + "</td>" +
-                                "<td>" + doc.score + "</td>" +
-                                "</tr>"
+                            var published_date = new Date(doc.pub_date);
+
+                            $('#results').append(
+                                "<div class=\"result\">" +
+                                "<a href=\"" + doc.url + "\" target=\"_blank\">" + doc.magazine + " >> " + doc.title + "</a>" +
+                                "<p>" + doc.url + "<br />" +
+                                "By " + doc.author.join(", ") + "<br />" +
+                                "Published " + published_date.toLocaleDateString('en-us', date_options) + "<br />" +
+                                "Word Count: " + doc.word_count + "<br />" +
+                                "Search Relevance: " + doc.score +
+                                "</p></div><hr />"
                             );
                         });
                     },
                     'json'
                 );
 
+            }
+
+            $('#searchText').keyup(function() {
+              clearTimeout(thread);
+              var $this = $(this);
+              thread = setTimeout(function(){searchStories($this.val())}, 500);
+            });
+
+            /* attach a submit handler to the form */
+            $("#searchForm").submit(function(event) {
+                // Prevent default form submission
+                event.preventDefault();
+                searchStories($( '#searchText').val());
             });
         </script>
