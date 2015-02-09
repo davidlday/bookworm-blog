@@ -21,6 +21,8 @@ results = response.read()
 
 sys.stdout.write("Content-Type: " + headers['Content-Type'])
 sys.stdout.write("\n")
+sys.stdout.write("Access-Control-Allow-Origin: http://localhost:4000")
+sys.stdout.write("\n")
 sys.stdout.write("\n")
 sys.stdout.write(results)
 sys.stdout.write("\n")
