@@ -1,0 +1,98 @@
+---
+layout: page
+title: Market Histograms
+comments: false
+jquery: true
+googlecharts: true
+---
+        <script>
+            // Load the Visualization API and the piechart package.
+            google.load('visualization', '1.0', {'packages':['corechart']});
+
+            all_metrics = {
+                automated_readability_index: "Automated Readability Index",
+                avg_syllables_per_word: "Avg. Syllables per Word",
+                coleman_liau_index: "Coleman Liau Index",
+                dialogue_syllable_percentage: "Percent Dialogue (Syllables)",
+                dialogue_word_percentage: "Percent Dialogue (Words)",
+                dialogue_syllable_count: "Dialogue Syllable Count",
+                dialogue_unique_word_count: "Dialogue Unique Word Count",
+                dialogue_word_count: "Dialogue Word Count",
+                flesh_kincaid_grade_level: "Flesch Kincaid Grade Level",
+                flesh_reading_ease: "Flesch Reading Ease",
+                gunning_fog_index: "Gunning Fox Index",
+                lix: "LIX",
+                narrative_syllable_count: "Narrative Syllable Count",
+                narrative_word_count: "Narrative Word Count",
+                rix: "RIX",
+                sentence_count: "Sentence Count",
+                smog_index: "SMOG Index",
+                syllable_count: "Syllable Count",
+                unique_word_count: "Unique Word Count",
+                word_count: "Word Count",
+            };
+
+            var magazine_data = {};
+
+            var metric_charts = {
+                'coleman_liau_index': {
+                    'title': "Coleman Liau Index",
+                    'legend':    {position: 'none'},
+                    'histogram': { bucketSize: 0.5 },
+                    'enableInteractivity': true,
+                    'chartArea.left': 0,
+                    'chartArea.right': 0,
+                    'chartArea.width': '100%',
+                    'chartArea.height': '100%',
+                },
+                'dialogue_word_percentage': {
+                    'title': "Percent Dialogue (Words)",
+                    'legend':    {position: 'none'},
+                    'histogram': { bucketSize: 5 },
+                    'enableInteractivity': true,
+                    'chartArea.left': 0,
+                    'chartArea.right': 0,
+                    'chartArea.width': '100%',
+                    'chartArea.height': '100%',
+                },
+            };
+
+            // Draw charts for a magazine.
+            function drawCharts(magazine) {
+                $('#magazine_title').empty();
+                $('#magazine_title').append(magazine);
+                // Instantiate and draw our chart, passing in some options.
+                $.each( metric_charts, function( metric, options ) {
+                    var chart = new google.visualization.Histogram(document.getElementById('histogram_' + metric));
+                    chart.draw(magazine_data[magazine][metric], options);
+                });
+            }
+
+            $(document).ready( function() {
+                $.each( metric_charts, function( metric, options) {
+                    $('#histogram_container').append("<div id=\"histogram_" + metric + "\" style=\"width: 100%; height: 800px\"></div>");
+                });
+
+                $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&fl=*&wt=json&rows=99999999", function( data ) {
+                    // Populate magazine_data
+                    data.response.docs.forEach( function( doc ) {
+                        if (typeof magazine_data[doc.magazine] == 'undefined') {
+                            magazine_data[doc.magazine] = {}
+                        }
+                        $.each( metric_charts, function( metric, options) {
+                            if (typeof magazine_data[doc.magazine][metric] == 'undefined') {
+                                magazine_data[doc.magazine][metric] = new google.visualization.DataTable();
+                                magazine_data[doc.magazine][metric].addColumn('string', 'Story URL');
+                                magazine_data[doc.magazine][metric].addColumn('number', options.title);
+                            }
+                            magazine_data[doc.magazine][metric].addRow([doc.url,doc[metric]]);
+                        });
+                    });
+                    drawCharts("Apex Magazine");
+                });
+            });
+
+        </script>
+        <div id="histogram_container" style="width: 100%;">
+            <div id="magazine_title"></div>
+        </div>

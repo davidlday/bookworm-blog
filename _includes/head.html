@@ -27,13 +27,25 @@
   <!-- RSS -->
   <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
 
+  {% if page.googlecharts %}
+  <!-- Google Charts - MUST load before jQuery -->
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  {% endif %}
+
+  {% if page.d3js %}
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  {% endif %}
+
   {% if page.jquery %}
+  <!-- jQuery -->
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
   <script type="text/javascript" src="http://code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
   <script type="text/javascript" src="/public/js/jquery.scrolltable.js"></script>
   {% endif %}
 
   {% if page.metricsgraphics %}
+  <!-- MetricsGraphis -->
+  <!-- Not working! -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/metrics-graphics/2.1.0/metricsgraphics.min.css">
   <script type="text/javascript" src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
   <script type="text/javascript" src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.0/d3.min.js' charset='utf-8'></script>
