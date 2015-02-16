@@ -12,6 +12,7 @@ googlecharts: true
             all_metrics = {
                 automated_readability_index: "Automated Readability Index",
                 avg_syllables_per_word: "Avg. Syllables per Word",
+                avg_words_per_sentence: "Avg. Words per Sentence",
                 coleman_liau_index: "Coleman Liau Index",
                 dialogue_syllable_percentage: "Percent Dialogue (Syllables)",
                 dialogue_word_percentage: "Percent Dialogue (Words)",
@@ -30,6 +31,7 @@ googlecharts: true
                 syllable_count: "Syllable Count",
                 unique_word_count: "Unique Word Count",
                 word_count: "Word Count",
+                pov: "Point of View",
             };
 
             var magazine_data = {};
@@ -47,10 +49,55 @@ googlecharts: true
                         enableInteractivity: true,
                         animation:  {
                             duration: 500},
+                        chartArea: {
+                            width: '90%',
+                            height: '90%',
+                        },
                     },
                     column_settings: {
                         type: 'number',
                     },
+                    caption: '',
+                },
+                word_count: {
+                    chart_options: {
+                        title: all_metrics.word_count,
+                        legend:    {
+                            position: 'none'},
+                        histogram: {
+                            bucketSize: 500 },
+                        enableInteractivity: true,
+                        animation:  {
+                            duration: 1000},
+                        chartArea: {
+                            width: '90%',
+                            height: '90%',
+                        },
+                    },
+                    column_settings: {
+                        type: 'number',
+                    },
+                    caption: '',
+                },
+                avg_words_per_sentence: {
+                    chart_options: {
+                        title: all_metrics.word_count,
+                        legend:    {
+                            position: 'none'},
+                        histogram: {
+                            bucketSize: 5 },
+                        enableInteractivity: true,
+                        animation:  {
+                            duration: 1000},
+                        chartArea: {
+                            width: '90%',
+                            height: '90%',
+                        },
+                    },
+                    column_settings: {
+                        type: 'number',
+                    },
+                    caption: '',
                 },
                 dialogue_word_percentage: {
                     chart_options: {
