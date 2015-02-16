@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Market Histograms
+title: Market Statistics
 comments: false
 jquery: true
 googlecharts: true
@@ -33,27 +33,39 @@ googlecharts: true
             };
 
             var magazine_data = {};
+            var magazine_datatable = null;
+            var magazine_dataviews = {};
 
-            var metric_charts = {
-                'coleman_liau_index': {
-                    'title': "Coleman Liau Index",
-                    'legend':    {position: 'none'},
-                    'histogram': { bucketSize: 0.5 },
-                    'enableInteractivity': true,
-                    'chartArea.left': 0,
-                    'chartArea.right': 0,
-                    'chartArea.width': '100%',
-                    'chartArea.height': '100%',
+            var metrics = {
+                coleman_liau_index: {
+                    chart_options: {
+                        title: all_metrics.coleman_liau_index,
+                        legend:    {
+                            position: 'none'},
+                        histogram: {
+                            bucketSize: 0.5 },
+                        enableInteractivity: true,
+                        animation:  {
+                            duration: 500},
+                    },
+                    column_settings: {
+                        type: 'number',
+                    },
                 },
-                'dialogue_word_percentage': {
-                    'title': "Percent Dialogue (Words)",
-                    'legend':    {position: 'none'},
-                    'histogram': { bucketSize: 5 },
-                    'enableInteractivity': true,
-                    'chartArea.left': 0,
-                    'chartArea.right': 0,
-                    'chartArea.width': '100%',
-                    'chartArea.height': '100%',
+                dialogue_word_percentage: {
+                    chart_options: {
+                        title: all_metrics.dialogue_word_percentage,
+                        legend:    {
+                            position: 'none'},
+                        histogram: {
+                            bucketSize: 5 },
+                        enableInteractivity: true,
+                        animation:  {
+                            duration: 500},
+                    },
+                    column_settings: {
+                        type: 'number',
+                    },
                 },
             };
 
@@ -61,32 +73,46 @@ googlecharts: true
             function drawCharts(magazine) {
                 $('#magazine_title').empty();
                 $('#magazine_title').append(magazine);
+                var metrics_index = 0;
                 // Instantiate and draw our chart, passing in some options.
-                $.each( metric_charts, function( metric, options ) {
+                $.each( metrics, function( metric, options ) {
+                    var metric_view = new google.visualization.DataView(magazine_datatable);
+                    metric_view.setColumns([1, metrics_index + 2]);
+
                     var chart = new google.visualization.Histogram(document.getElementById('histogram_' + metric));
-                    chart.draw(magazine_data[magazine][metric], options);
+                    chart.draw(magazine_data[magazine][metric], metrics[metric].chart_options);
+//                    chart.draw(metric_view, metrics[metric].chart_options);
+                    console.log(chart);
                 });
             }
 
             $(document).ready( function() {
-                $.each( metric_charts, function( metric, options) {
+
+                magazine_datatable = new google.visualization.DataTable();
+                magazine_datatable.addColumn('string', 'Story URL');
+
+                $.each( metrics, function( metric, options) {
                     $('#histogram_container').append("<div id=\"histogram_" + metric + "\" style=\"width: 100%; height: 800px\"></div>");
+                    magazine_datatable.addColumn(metrics[metric].column_settings.type, metrics[metric].column_settings.title);
                 });
 
                 $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&fl=*&wt=json&rows=99999999", function( data ) {
                     // Populate magazine_data
                     data.response.docs.forEach( function( doc ) {
+                        data_row = [doc.url];
                         if (typeof magazine_data[doc.magazine] == 'undefined') {
                             magazine_data[doc.magazine] = {}
                         }
-                        $.each( metric_charts, function( metric, options) {
+                        $.each( metrics, function( metric, options) {
                             if (typeof magazine_data[doc.magazine][metric] == 'undefined') {
                                 magazine_data[doc.magazine][metric] = new google.visualization.DataTable();
                                 magazine_data[doc.magazine][metric].addColumn('string', 'Story URL');
-                                magazine_data[doc.magazine][metric].addColumn('number', options.title);
+                                magazine_data[doc.magazine][metric].addColumn('number', metrics[metric].chart_options.title);
                             }
                             magazine_data[doc.magazine][metric].addRow([doc.url,doc[metric]]);
+                            data_row.push(doc[metric]);
                         });
+                        magazine_datatable.addRow(data_row);
                     });
                     drawCharts("Apex Magazine");
                 });
