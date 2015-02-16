@@ -81,7 +81,7 @@ googlecharts: true
                 },
                 avg_words_per_sentence: {
                     chart_options: {
-                        title: all_metrics.word_count,
+                        title: all_metrics.avg_words_per_sentence,
                         legend:    {
                             position: 'none'},
                         histogram: {
@@ -109,6 +109,10 @@ googlecharts: true
                         enableInteractivity: true,
                         animation:  {
                             duration: 500},
+                        chartArea: {
+                            width: '90%',
+                            height: '90%',
+                        },
                     },
                     column_settings: {
                         type: 'number',
@@ -124,7 +128,7 @@ googlecharts: true
                 // Instantiate and draw our chart, passing in some options.
                 $.each( metrics, function( metric, options ) {
                     var metric_view = new google.visualization.DataView(magazine_datatable);
-                    metric_view.setColumns([1, metrics_index + 2]);
+//                    metric_view.setColumns([0, metrics_index + 1]);
 
                     var chart = new google.visualization.Histogram(document.getElementById('histogram_' + metric));
                     chart.draw(magazine_data[magazine][metric], metrics[metric].chart_options);
@@ -134,6 +138,22 @@ googlecharts: true
             }
 
             $(document).ready( function() {
+
+                var magazines = [];
+                // TODO: Bug Check!
+                // For some weird reason, SOLR won't return Apex with q=*,
+                // but does appear to return everything with q=apex.
+                $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?wt=json&q=apex&fl=magazine&group=true&group.field=magazine&group.main=true", function( data) {
+                    data.response.docs.forEach( function(doc) {
+                        magazines.push(doc.magazine);
+                        $('#magazine_selector').append("<option value=\"" + doc.magazine + "\">" + doc.magazine + "</option>");
+                    });
+                    $("#magazine_selector").val([]);
+                });
+                $('#magazine_selector').change( function() {
+                    drawCharts( $('#magazine_selector option:selected').val());
+                });
+
 
                 magazine_datatable = new google.visualization.DataTable();
                 magazine_datatable.addColumn('string', 'Story URL');
@@ -161,11 +181,14 @@ googlecharts: true
                         });
                         magazine_datatable.addRow(data_row);
                     });
-                    drawCharts("Apex Magazine");
                 });
             });
 
         </script>
         <div id="histogram_container" style="width: 100%;">
+            <div id="chart_controls">
+                <select id="magazine_selector">
+                </select>
+            </div>
             <div id="magazine_title"></div>
         </div>
