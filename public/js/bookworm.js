@@ -32,159 +32,94 @@ var bookworm_labels = {
 
 // Histogram Configurations
 // TODO: Define for all metrics
-var histogram_settings = {
-    word_count: {
-        chart_options: {
-            title: bookworm_labels.word_count,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 500 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
-        },
+var default_histogram_settings = {
+    legend:    {
+        position: 'none'},
+    enableInteractivity: true,
+    chartArea: {
+        width: '80%',
+        height: '80%',
     },
-    avg_words_per_sentence: {
-        chart_options: {
-            title: bookworm_labels.avg_words_per_sentence,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 5 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
-        },
-    },
-    dialogue_word_percentage: {
-        chart_options: {
-            title: bookworm_labels.dialogue_word_percentage,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 5 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
-        },
-    },
-    automated_readability_index: {
-        chart_options: {
-            title: bookworm_labels.automated_readability_index,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 0.5 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
-        },
-    },
-    coleman_liau_index: {
-        chart_options: {
-            title: bookworm_labels.coleman_liau_index,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 0.5 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
-        },
-    },
-    flesch_kincaid_grade_level: {
-        chart_options: {
-            title: bookworm_labels.flesch_kincaid_grade_level,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 0.5 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
-        },
-    },
-    flesch_reading_ease: {
-        chart_options: {
-            title: bookworm_labels.flesch_reading_ease,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 0.5 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
-        },
-    },
-    gunning_fog_index: {
-        chart_options: {
-            title: bookworm_labels.gunning_fog_index,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 0.5 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
-        },
-    },
-    lix: {
-        chart_options: {
-            title: bookworm_labels.lix,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 0.5 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
-        },
-    },
-    rix: {
-        chart_options: {
-            title: bookworm_labels.rix,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 0.5 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
-        },
-    },
-    smog_index: {
-        chart_options: {
-            title: bookworm_labels.smog_index,
-            legend:    {
-                position: 'none'},
-            histogram: {
-                bucketSize: 0.5 },
-            enableInteractivity: true,
-            chartArea: {
-                width: '90%',
-                height: '90%',
-            },
+    vAxis: {
+        gridlines: {
+            count: -1,
         },
     },
 };
+
+var histogram_settings = {
+    word_count: {
+        title: bookworm_labels.word_count,
+        histogram: {
+            bucketSize: 500
+        },
+    },
+    avg_words_per_sentence: {
+        title: bookworm_labels.avg_words_per_sentence,
+        histogram: {
+            bucketSize: 5
+        },
+    },
+    dialogue_word_percentage: {
+        title: bookworm_labels.dialogue_word_percentage,
+        histogram: {
+            bucketSize: 5
+        },
+    },
+    automated_readability_index: {
+        title: bookworm_labels.automated_readability_index,
+        histogram: {
+            bucketSize: 0.5
+        },
+    },
+    coleman_liau_index: {
+        title: bookworm_labels.coleman_liau_index,
+        histogram: {
+            bucketSize: 0.5
+        },
+    },
+    flesch_kincaid_grade_level: {
+        title: bookworm_labels.flesch_kincaid_grade_level,
+        histogram: {
+            bucketSize: 0.5
+        },
+    },
+    flesch_reading_ease: {
+        title: bookworm_labels.flesch_reading_ease,
+        histogram: {
+            bucketSize: 0.5
+        },
+    },
+    gunning_fog_index: {
+        title: bookworm_labels.gunning_fog_index,
+        histogram: {
+            bucketSize: 0.5
+        },
+    },
+    lix: {
+        title: bookworm_labels.lix,
+        histogram: {
+            bucketSize: 0.5
+        },
+    },
+    rix: {
+        title: bookworm_labels.rix,
+        histogram: {
+            bucketSize: 0.5
+        },
+    },
+    smog_index: {
+        title: bookworm_labels.smog_index,
+        histogram: {
+            bucketSize: 0.5
+        },
+    },
+};
+// Apply defaults
+for (var attr in default_histogram_settings) {
+    for (var setting in histogram_settings) {
+        histogram_settings[setting][attr] = default_histogram_settings[attr];
+    }
+}
+
+

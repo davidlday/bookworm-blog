@@ -9,7 +9,7 @@ bookwormjs: true
         <div id="loading_message" style="width: 100%;">
         Loading data...
         </div>
-        <div id="magazine_dashboard" style="width: 100%;display: none;">
+        <div id="magazine_dashboard" style="width: 100%; display: none;">
             <div id="magazine_selector" style="padding-bottom: 2em"></div>
             <hr />
         </div>
@@ -29,11 +29,8 @@ bookwormjs: true
 
                 $(document).ready( function() {
 
-                    // Get a list of magazines from search
-                    $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?wt=json&q=*&fl=magazine&group=true&group.field=magazine&rows=99999&group.main=true", function( data) {
-                        data.response.docs.forEach( function(doc) {
-                            magazines.push(doc.magazine);
-                        });
+                    // Get full data
+                    $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&fl=*&wt=json&rows=99999999", function( data ) {
 
                         // Create selector control
                         magazine_selector = new google.visualization.ControlWrapper({
@@ -41,7 +38,6 @@ bookwormjs: true
                             'containerId': 'magazine_selector',
                             'options': {
                                 'filterColumnLabel': 'Magazine',
-                                'values': magazines,
                                 'ui': {
                                     'allowTyping': true,
                                     'allowMultiple': false,
@@ -50,22 +46,18 @@ bookwormjs: true
                             },
                         });
 
-                    });
-
-                    // Get full data
-                    $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&fl=*&wt=json&rows=99999999", function( data ) {
                         // Define DataTable
                         magazine_datatable = new google.visualization.DataTable();
                         magazine_datatable.addColumn('string', 'Magazine');
                         magazine_datatable.addColumn('string', 'Story URL');
-                        $.each( histogram_settings, function( metric, options) {
-                            magazine_datatable.addColumn('number', histogram_settings[metric].chart_options.title);
+                        $.each( histogram_settings, function( metric) {
+                            magazine_datatable.addColumn('number', histogram_settings[metric].title);
                         });
 
                         // Populate magazine_datatable
                         data.response.docs.forEach( function( doc ) {
                             var data_row = [doc.magazine, doc.url];
-                            $.each( histogram_settings, function( metric, options) {
+                            $.each( histogram_settings, function( metric ) {
                                 data_row.push(doc[metric]);
                             });
                             magazine_datatable.addRow(data_row);
@@ -76,18 +68,22 @@ bookwormjs: true
 
                         //Create initial charts
                         var index = 2; // Offset to account for Magazine and Story URL columns
+                        var div_width = $('#magazine_dashboard').parent().width()
+                        var div_height = (div_width * 2) / 3;
                         $.each( histogram_settings, function( metric ) {
                             var chart = new google.visualization.ChartWrapper({
                                 'chartType': 'Histogram',
                                 'containerId': 'histogram_' + metric,
-                                'options': histogram_settings[metric].chart_options,
+                                'options': histogram_settings[metric],
                                 'view': {
                                     'columns': [1, index]
                                 },
                             });
                             charts.push(chart);
                             // Add div for the chart
-                            $('#magazine_dashboard').append("<div id=\"histogram_" + metric + "\" style=\"width: 100%; height: 800px\"></div><hr />");
+                            $('#magazine_dashboard').append("<div id=\"histogram_" + metric +
+                                "\" style=\"width: " + div_width + "px; height: " + div_width +
+                                "px;\"></div><hr />");
                             index++;
                         });
 
