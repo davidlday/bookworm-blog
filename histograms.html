@@ -4,191 +4,103 @@ title: Market Statistics
 comments: false
 jquery: true
 googlecharts: true
+bookwormjs: true
 ---
+        <div id="loading_message" style="width: 100%;">
+        Loading data...
+        </div>
+        <div id="magazine_dashboard" style="width: 100%;display: none;">
+            <div id="magazine_selector" style="padding-bottom: 2em"></div>
+            <hr />
+        </div>
+
         <script>
             // Load the Visualization API and the piechart package.
-            google.load('visualization', '1.0', {'packages':['corechart']});
+            google.load('visualization', '1.0', {'packages':['corechart', 'controls']});
+            google.setOnLoadCallback(initDashboard);
 
-            all_metrics = {
-                automated_readability_index: "Automated Readability Index",
-                avg_syllables_per_word: "Avg. Syllables per Word",
-                avg_words_per_sentence: "Avg. Words per Sentence",
-                coleman_liau_index: "Coleman Liau Index",
-                dialogue_syllable_percentage: "Percent Dialogue (Syllables)",
-                dialogue_word_percentage: "Percent Dialogue (Words)",
-                dialogue_syllable_count: "Dialogue Syllable Count",
-                dialogue_unique_word_count: "Dialogue Unique Word Count",
-                dialogue_word_count: "Dialogue Word Count",
-                flesh_kincaid_grade_level: "Flesch Kincaid Grade Level",
-                flesh_reading_ease: "Flesch Reading Ease",
-                gunning_fog_index: "Gunning Fox Index",
-                lix: "LIX",
-                narrative_syllable_count: "Narrative Syllable Count",
-                narrative_word_count: "Narrative Word Count",
-                rix: "RIX",
-                sentence_count: "Sentence Count",
-                smog_index: "SMOG Index",
-                syllable_count: "Syllable Count",
-                unique_word_count: "Unique Word Count",
-                word_count: "Word Count",
-                pov: "Point of View",
-            };
+            var magazines = [];
+            var magazine_datatable;
+            var magazine_selector;
+            var magazine_dashboard;
+            var charts = [];
 
-            var magazine_data = {};
-            var magazine_datatable = null;
-            var magazine_dataviews = {};
+            function initDashboard() {
 
-            var metrics = {
-                coleman_liau_index: {
-                    chart_options: {
-                        title: all_metrics.coleman_liau_index,
-                        legend:    {
-                            position: 'none'},
-                        histogram: {
-                            bucketSize: 0.5 },
-                        enableInteractivity: true,
-                        animation:  {
-                            duration: 500},
-                        chartArea: {
-                            width: '90%',
-                            height: '90%',
-                        },
-                    },
-                    column_settings: {
-                        type: 'number',
-                    },
-                    caption: '',
-                },
-                word_count: {
-                    chart_options: {
-                        title: all_metrics.word_count,
-                        legend:    {
-                            position: 'none'},
-                        histogram: {
-                            bucketSize: 500 },
-                        enableInteractivity: true,
-                        animation:  {
-                            duration: 1000},
-                        chartArea: {
-                            width: '90%',
-                            height: '90%',
-                        },
-                    },
-                    column_settings: {
-                        type: 'number',
-                    },
-                    caption: '',
-                },
-                avg_words_per_sentence: {
-                    chart_options: {
-                        title: all_metrics.avg_words_per_sentence,
-                        legend:    {
-                            position: 'none'},
-                        histogram: {
-                            bucketSize: 5 },
-                        enableInteractivity: true,
-                        animation:  {
-                            duration: 1000},
-                        chartArea: {
-                            width: '90%',
-                            height: '90%',
-                        },
-                    },
-                    column_settings: {
-                        type: 'number',
-                    },
-                    caption: '',
-                },
-                dialogue_word_percentage: {
-                    chart_options: {
-                        title: all_metrics.dialogue_word_percentage,
-                        legend:    {
-                            position: 'none'},
-                        histogram: {
-                            bucketSize: 5 },
-                        enableInteractivity: true,
-                        animation:  {
-                            duration: 500},
-                        chartArea: {
-                            width: '90%',
-                            height: '90%',
-                        },
-                    },
-                    column_settings: {
-                        type: 'number',
-                    },
-                },
-            };
+                $(document).ready( function() {
 
-            // Draw charts for a magazine.
-            function drawCharts(magazine) {
-                $('#magazine_title').empty();
-                $('#magazine_title').append(magazine);
-                var metrics_index = 0;
-                // Instantiate and draw our chart, passing in some options.
-                $.each( metrics, function( metric, options ) {
-                    var metric_view = new google.visualization.DataView(magazine_datatable);
-//                    metric_view.setColumns([0, metrics_index + 1]);
-
-                    var chart = new google.visualization.Histogram(document.getElementById('histogram_' + metric));
-                    chart.draw(magazine_data[magazine][metric], metrics[metric].chart_options);
-//                    chart.draw(metric_view, metrics[metric].chart_options);
-                    console.log(chart);
-                });
-            }
-
-            $(document).ready( function() {
-
-                var magazines = [];
-                // TODO: Bug Check!
-                // For some weird reason, SOLR won't return Apex with q=*,
-                // but does appear to return everything with q=apex.
-                $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?wt=json&q=apex&fl=magazine&group=true&group.field=magazine&group.main=true", function( data) {
-                    data.response.docs.forEach( function(doc) {
-                        magazines.push(doc.magazine);
-                        $('#magazine_selector').append("<option value=\"" + doc.magazine + "\">" + doc.magazine + "</option>");
-                    });
-                    $("#magazine_selector").val([]);
-                });
-                $('#magazine_selector').change( function() {
-                    drawCharts( $('#magazine_selector option:selected').val());
-                });
-
-
-                magazine_datatable = new google.visualization.DataTable();
-                magazine_datatable.addColumn('string', 'Story URL');
-
-                $.each( metrics, function( metric, options) {
-                    $('#histogram_container').append("<div id=\"histogram_" + metric + "\" style=\"width: 100%; height: 800px\"></div>");
-                    magazine_datatable.addColumn(metrics[metric].column_settings.type, metrics[metric].column_settings.title);
-                });
-
-                $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&fl=*&wt=json&rows=99999999", function( data ) {
-                    // Populate magazine_data
-                    data.response.docs.forEach( function( doc ) {
-                        data_row = [doc.url];
-                        if (typeof magazine_data[doc.magazine] == 'undefined') {
-                            magazine_data[doc.magazine] = {}
-                        }
-                        $.each( metrics, function( metric, options) {
-                            if (typeof magazine_data[doc.magazine][metric] == 'undefined') {
-                                magazine_data[doc.magazine][metric] = new google.visualization.DataTable();
-                                magazine_data[doc.magazine][metric].addColumn('string', 'Story URL');
-                                magazine_data[doc.magazine][metric].addColumn('number', metrics[metric].chart_options.title);
-                            }
-                            magazine_data[doc.magazine][metric].addRow([doc.url,doc[metric]]);
-                            data_row.push(doc[metric]);
+                    // Get a list of magazines from search
+                    $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?wt=json&q=*&fl=magazine&group=true&group.field=magazine&rows=99999&group.main=true", function( data) {
+                        data.response.docs.forEach( function(doc) {
+                            magazines.push(doc.magazine);
                         });
-                        magazine_datatable.addRow(data_row);
+
+                        // Create selector control
+                        magazine_selector = new google.visualization.ControlWrapper({
+                            'controlType': 'CategoryFilter',
+                            'containerId': 'magazine_selector',
+                            'options': {
+                                'filterColumnLabel': 'Magazine',
+                                'values': magazines,
+                                'ui': {
+                                    'allowTyping': true,
+                                    'allowMultiple': false,
+                                    'selectedValuesLayout': 'belowStacked'
+                                },
+                            },
+                        });
+
+                    });
+
+                    // Get full data
+                    $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&fl=*&wt=json&rows=99999999", function( data ) {
+                        // Define DataTable
+                        magazine_datatable = new google.visualization.DataTable();
+                        magazine_datatable.addColumn('string', 'Magazine');
+                        magazine_datatable.addColumn('string', 'Story URL');
+                        $.each( histogram_settings, function( metric, options) {
+                            magazine_datatable.addColumn('number', histogram_settings[metric].chart_options.title);
+                        });
+
+                        // Populate magazine_datatable
+                        data.response.docs.forEach( function( doc ) {
+                            var data_row = [doc.magazine, doc.url];
+                            $.each( histogram_settings, function( metric, options) {
+                                data_row.push(doc[metric]);
+                            });
+                            magazine_datatable.addRow(data_row);
+                        });
+
+                        // Create a dashboard.
+                        magazine_dashboard = new google.visualization.Dashboard(document.getElementById('magazine_dashboard'));
+
+                        //Create initial charts
+                        var index = 2; // Offset to account for Magazine and Story URL columns
+                        $.each( histogram_settings, function( metric ) {
+                            var chart = new google.visualization.ChartWrapper({
+                                'chartType': 'Histogram',
+                                'containerId': 'histogram_' + metric,
+                                'options': histogram_settings[metric].chart_options,
+                                'view': {
+                                    'columns': [1, index]
+                                },
+                            });
+                            charts.push(chart);
+                            // Add div for the chart
+                            $('#magazine_dashboard').append("<div id=\"histogram_" + metric + "\" style=\"width: 100%; height: 800px\"></div><hr />");
+                            index++;
+                        });
+
+                        // Bind charts to selector
+                        magazine_dashboard.bind(magazine_selector, charts);
+
+                        // Draw the dashboard
+                        magazine_dashboard.draw(magazine_datatable);
+
+                        // Now show the whole thing
+                        $('#loading_message').hide();
+                        $('#magazine_dashboard').show();
                     });
                 });
-            });
-
+            };
         </script>
-        <div id="histogram_container" style="width: 100%;">
-            <div id="chart_controls">
-                <select id="magazine_selector">
-                </select>
-            </div>
-            <div id="magazine_title"></div>
-        </div>
