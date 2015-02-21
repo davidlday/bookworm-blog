@@ -22,7 +22,9 @@ Articles:
 Reference Material:
 
 * [Ideosity: Readability Tests and Formulas](http://www.ideosity.com/ourblog/post/ideosphere-blog/2010/01/14/readability-tests-and-formulas)
+* [Gender, Genre, and Writing Style in Formal Written Texts](http://u.cs.biu.ac.il/~koppel/papers/male-female-text-final.pdf)
 
 Utilities:
 
 * [Readability-Score.com](https://readability-score.com/)
+* [Gender Guesser](http://www.hackerfactor.com/GenderGuesser.php)
