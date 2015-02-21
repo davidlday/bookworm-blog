@@ -2,6 +2,21 @@
 * Common Bookworm JavaScript
 */
 
+// URL of search script
+var search_url = 'http://bookworm.davidlday.com/public/scripts/storysearch.py';
+
+// Functions
+// General Search via JSONP
+function searchBookworm(params, callbackName) {
+    // Invoke search
+    $.ajax({url: search_url + '?' + params,
+        dataType: 'jsonp',
+        jsonpCallback: callbackName,
+        jsonp: 'json.wrf'
+    });
+}
+
+// Constants and Configs
 // Labels for Metrics
 var bookworm_labels = {
     url: "Story URL",
@@ -32,6 +47,7 @@ var bookworm_labels = {
 
 // Histogram Configurations
 // TODO: Define for all metrics
+// Default Options
 var default_histogram_settings = {
     legend:    {
         position: 'none'},
@@ -47,6 +63,7 @@ var default_histogram_settings = {
     },
 };
 
+// Specific Options
 var histogram_settings = {
     word_count: {
         title: bookworm_labels.word_count,
@@ -115,11 +132,10 @@ var histogram_settings = {
         },
     },
 };
-// Apply defaults
+
+// Merge Default Options into Specific Options
 for (var attr in default_histogram_settings) {
     for (var setting in histogram_settings) {
         histogram_settings[setting][attr] = default_histogram_settings[attr];
     }
 }
-
-

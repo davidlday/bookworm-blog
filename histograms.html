@@ -25,78 +25,79 @@ bookwormjs: true
             var magazine_dashboard;
             var charts = [];
 
-            function initDashboard() {
+            function loadDataAndDraw(data) {
+                // Populate magazine_datatable
+                data.response.docs.forEach( function( doc ) {
+                    var data_row = [doc.magazine, doc.url];
+                    $.each( histogram_settings, function( metric ) {
+                        data_row.push(doc[metric]);
+                    });
+                    magazine_datatable.addRow(data_row);
+                });
+
+                // Draw the dashboard
+                magazine_dashboard.draw(magazine_datatable);
+
+                // Now show the whole thing
+                $('#loading_message').hide();
+                $('#magazine_dashboard').show();
+
+            }
+
+            function initDashboard(data) {
+
+                // Create selector control
+                magazine_selector = new google.visualization.ControlWrapper({
+                    'controlType': 'CategoryFilter',
+                    'containerId': 'magazine_selector',
+                    'options': {
+                        'filterColumnLabel': 'Magazine',
+                        'ui': {
+                            'allowTyping': true,
+                            'allowMultiple': false,
+                            'selectedValuesLayout': 'belowStacked'
+                        },
+                    },
+                });
+
+                // Define DataTable
+                magazine_datatable = new google.visualization.DataTable();
+                magazine_datatable.addColumn('string', 'Magazine');
+                magazine_datatable.addColumn('string', 'Story URL');
+                $.each( histogram_settings, function( metric) {
+                    magazine_datatable.addColumn('number', histogram_settings[metric].title);
+                });
+
+                // Create a dashboard.
+                magazine_dashboard = new google.visualization.Dashboard(document.getElementById('magazine_dashboard'));
+
+                //Create initial charts
+                var index = 2; // Offset to account for Magazine and Story URL columns
+                var div_width = $('#magazine_dashboard').parent().width()
+                var div_height = (div_width * 2) / 3;
+                $.each( histogram_settings, function( metric ) {
+                    var chart = new google.visualization.ChartWrapper({
+                        'chartType': 'Histogram',
+                        'containerId': 'histogram_' + metric,
+                        'options': histogram_settings[metric],
+                        'view': {
+                            'columns': [1, index]
+                        },
+                    });
+                    charts.push(chart);
+                    // Add div for the chart
+                    $('#magazine_dashboard').append("<div id=\"histogram_" + metric +
+                        "\" style=\"width: " + div_width + "px; height: " + div_width +
+                        "px;\"></div><hr />");
+                    index++;
+                });
+
+                // Bind charts to selector
+                magazine_dashboard.bind(magazine_selector, charts);
 
                 $(document).ready( function() {
-
-                    // Get full data
-                    $.getJSON("http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&fl=*&wt=json&rows=99999999", function( data ) {
-
-                        // Create selector control
-                        magazine_selector = new google.visualization.ControlWrapper({
-                            'controlType': 'CategoryFilter',
-                            'containerId': 'magazine_selector',
-                            'options': {
-                                'filterColumnLabel': 'Magazine',
-                                'ui': {
-                                    'allowTyping': true,
-                                    'allowMultiple': false,
-                                    'selectedValuesLayout': 'belowStacked'
-                                },
-                            },
-                        });
-
-                        // Define DataTable
-                        magazine_datatable = new google.visualization.DataTable();
-                        magazine_datatable.addColumn('string', 'Magazine');
-                        magazine_datatable.addColumn('string', 'Story URL');
-                        $.each( histogram_settings, function( metric) {
-                            magazine_datatable.addColumn('number', histogram_settings[metric].title);
-                        });
-
-                        // Populate magazine_datatable
-                        data.response.docs.forEach( function( doc ) {
-                            var data_row = [doc.magazine, doc.url];
-                            $.each( histogram_settings, function( metric ) {
-                                data_row.push(doc[metric]);
-                            });
-                            magazine_datatable.addRow(data_row);
-                        });
-
-                        // Create a dashboard.
-                        magazine_dashboard = new google.visualization.Dashboard(document.getElementById('magazine_dashboard'));
-
-                        //Create initial charts
-                        var index = 2; // Offset to account for Magazine and Story URL columns
-                        var div_width = $('#magazine_dashboard').parent().width()
-                        var div_height = (div_width * 2) / 3;
-                        $.each( histogram_settings, function( metric ) {
-                            var chart = new google.visualization.ChartWrapper({
-                                'chartType': 'Histogram',
-                                'containerId': 'histogram_' + metric,
-                                'options': histogram_settings[metric],
-                                'view': {
-                                    'columns': [1, index]
-                                },
-                            });
-                            charts.push(chart);
-                            // Add div for the chart
-                            $('#magazine_dashboard').append("<div id=\"histogram_" + metric +
-                                "\" style=\"width: " + div_width + "px; height: " + div_width +
-                                "px;\"></div><hr />");
-                            index++;
-                        });
-
-                        // Bind charts to selector
-                        magazine_dashboard.bind(magazine_selector, charts);
-
-                        // Draw the dashboard
-                        magazine_dashboard.draw(magazine_datatable);
-
-                        // Now show the whole thing
-                        $('#loading_message').hide();
-                        $('#magazine_dashboard').show();
-                    });
+                    var params = 'q=*&wt=json&fl=*,score&rows=999999999';
+                    searchBookworm(params, 'loadDataAndDraw');
                 });
             };
         </script>

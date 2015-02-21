@@ -19,9 +19,12 @@ response = urllib2.urlopen(request)
 headers = response.info()
 results = response.read()
 
-sys.stdout.write("Content-Type: " + headers['Content-Type'])
-sys.stdout.write("\n")
-sys.stdout.write("Access-Control-Allow-Origin: http://localhost:4000")
+if 'json.wrf' in fs:
+    content_type = 'application/javascript'
+else:
+    content_type = headers['Content-Type']
+
+sys.stdout.write("Content-Type: " + content_type)
 sys.stdout.write("\n")
 sys.stdout.write("\n")
 sys.stdout.write(results)

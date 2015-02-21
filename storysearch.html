@@ -3,6 +3,7 @@ layout: page
 title: Story Search
 comments: false
 jquery: true
+bookwormjs: true
 ---
 
         <style>
@@ -22,81 +23,78 @@ jquery: true
 
         <script>
             // Controls what metrics are displayed.
-            var display_results = {
-                syllable_count: "Total Syllable Count",
-                word_count: "Total Word Count",
-                sentence_count: "Total Sentence Count",
-                avg_syllables_per_word: "Avg. Syllables per Word",
-                avg_words_per_sentence: "Avg. Words per Sentence",
-
-//                dialogue_syllable_count: "Dialogue Syllable Count",
-//                dialogue_word_count: "Dialogue Word Count",
-//                narrative_syllable_count: "Narrative Syllable Count",
-//                narrative_word_count: "Narrative Word Count",
-//                dialogue_syllable_percentage: "Percent Dialogue (Syllables)",
-                dialogue_word_percentage: "Percent Dialogue (Words)",
-
-                pov: "Point of View",
-
-                coleman_liau_index: "Coleman Liau Index",
-                automated_readability_index: "Automated Readability Index",
-                flesch_kincaid_grade_level: "Flesch Kincaid Grade Level",
-                smog_index: "SMOG Index",
-                flesch_reading_ease: "Flesch Reading Ease",
-                gunning_fog_index: "Gunning Fog Index",
-                rix: "RIX",
-                lix: "LIX",
-            };
-
-
+            var display_results = [
+                'syllable_count',
+                'word_count',
+                'sentence_count',
+                'avg_syllables_per_word',
+                'avg_words_per_sentence',
+                'dialogue_word_percentage',
+                'pov',
+                'coleman_liau_index',
+                'automated_readability_index',
+                'flesch_kincaid_grade_level',
+                'smog_index',
+                'flesch_reading_ease',
+                'gunning_fog_index',
+                'rix',
+                'lix',
+            ];
 
             var thread = null;
 
-            function searchStories(query) {
+            function displayResults(data) {
+                // Update results stats
+                $('#searchStats').empty();
+                $('#searchStats').append(
+                    "Found " + data.response.numFound + " stories.<hr />"
+                );
+                var res_counter = 1;
+                var date_options = {year: "numeric", month: "long", day: "numeric"};
+
+                // Add results
+                $.each(data.response.docs, function(index, doc) {
+                    var published_date = new Date(doc.pub_date);
+
+                    // Generate metrics string
+                    var metrics_display = '';
+                    $.each(display_results, function(metric) {
+                        metrics_display += "&nbsp;&nbsp;" + bookworm_labels[metric] + ": " + doc[metric] + "<br />";
+                    });
+
+                    $('#results').append(
+                        "<div class=\"result\" id=\"res-" + res_counter + "\">" +
+                        res_counter + ".&nbsp;<a href=\"" + doc.url + "\" target=\"story\">" +
+                        doc.magazine + " >> " + doc.title + "</a>" +
+                        "<p>" + doc.url + "<br />" +
+                        "By " + doc.author.join(", ") + "<br />" +
+                        "Published " + published_date.toLocaleDateString('en-us', date_options) + "<br />" +
+                        "Search Relevance: " + doc.score + "<br />" +
+//                        "<div class=\"toggler\">Show More Like This" +
+//                        "<div class=\"mlt\" id=\"mlt-" + res_counter + "\">More Like This</div>" +
+//                        "</div>"+
+                        "</p></div>" +
+                        "<hr />"
+                    );
+
+//                    $('#mlt-' + res_counter).hide()
+
+                    res_counter += 1;
+                });
+//                $('div.toggler').click(function() {
+//                    $(this).children().each( function() {
+//                        $(this).toggle();
+//                    });
+//                });
+            }
+
+            function searchStories(query, callbackName) {
                 // Wipe out prior results
                 $('#results').empty();
                 $('#searchStats').empty();
                 $('#searchStats').append("Searching...");
-                var url = 'http://bookworm.davidlday.com/public/scripts/storysearch.py';
-                var date_options = {year: "numeric", month: "long", day: "numeric"};
-
-                // Invoke search
-                $.post(url,
-                    {q: query, wt: 'json', fl: '*,score', rows: '999999999'},
-                    function(data) {
-                        // Update results stats
-                        $('#searchStats').empty();
-                        $('#searchStats').append(
-                            "Found " + data.response.numFound + " stories.<hr />"
-                        );
-                        var res_counter = 1;
-
-                        // Add results
-                        $.each(data.response.docs, function(index, doc) {
-                            var published_date = new Date(doc.pub_date);
-
-                            // Generate metrics string
-                            var metrics_display = '';
-                            $.each(display_results, function(key, value) {
-                                metrics_display += "&nbsp;&nbsp;" + value + ": " + doc[key] + "\n";
-                            });
-
-                            $('#results').append(
-                                "<div class=\"result\">" +
-                                res_counter + ".&nbsp;<a href=\"" + doc.url + "\" target=\"story\">" +
-                                doc.magazine + " >> " + doc.title + "</a>" +
-                                "<p>" + doc.url + "<br />" +
-                                "By " + doc.author.join(", ") + "<br />" +
-                                "Published " + published_date.toLocaleDateString('en-us', date_options) + "<br />" +
-                                "Search Relevance: " + doc.score +
-                                "</p></div><hr />"
-                            );
-                            res_counter += 1;
-                        });
-                    },
-                    'json'
-                );
-
+                var params = 'q=' + query + '&wt=json&fl=*,score&rows=999999999';
+                searchBookworm(params, 'displayResults');
             }
 
             $('#searchText').keyup(function() {
@@ -106,9 +104,9 @@ jquery: true
             });
 
             /* attach a submit handler to the form */
-            $("#searchForm").submit(function(event) {
+            $('#searchForm').submit(function(event) {
                 // Prevent default form submission
                 event.preventDefault();
-                searchStories($( '#searchText').val());
+                searchStories($('#searchText').val());
             });
         </script>
