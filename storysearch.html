@@ -7,21 +7,30 @@ bookwormjs: true
 ---
 
         <style>
+        .accordion {
+            font-size: 62.5%;
+        }
         .result p {
             font-size: 75%;
         }
         </style>
         <div id="search">
-            <form id="searchForm" action="http://bookworm.davidlday.com/public/scripts/storysearch.py" >
-                <input id="searchText" type="text" style="width: 100%" placeholder="Search Stories..." />
-            </form>
+            <input id="searchText" type="text" style="width: 100%" placeholder="Search Stories..." />
+            <button id="searchButton">Search</button>
         </div>
-        <div id="searchStats">
-        </div>
-        <div id="results">
+        <div id="searchStats"></div>
+        <div id="results"></div>
+        <div id="pagination">
         </div>
 
         <script>
+            // Get query text
+            $('#searchText').val(getParameterByName('q'));
+            // Get Page
+            var start = Number(getParameterByName('s')) || 0;
+            var rows = Number(getParameterByName('r')) || 10;
+            var mlt_count = 10;
+
             // Controls what metrics are displayed.
             var display_results = [
                 'syllable_count',
@@ -44,12 +53,27 @@ bookwormjs: true
             var thread = null;
 
             function displayResults(data) {
+
+                console.log(data);
+
+                start = Number(data.responseHeader.params.start) || 0;
+                rows = Number(data.responseHeader.params.rows) || 10;
+                query = data.responseHeader.params.q;
+
+                // Create Link
+                var result_link = "?q=" + query +
+                    "&s=" + start +
+                    "&r=" + rows;
                 // Update results stats
                 $('#searchStats').empty();
                 $('#searchStats').append(
-                    "Found " + data.response.numFound + " stories.<hr />"
+                    "Found " + data.response.numFound + " stories.<br />" +
+                    "<a href=\"" + result_link + "\">Link to this result page.</a><br />" +
+                    "<hr />"
+
                 );
-                var res_counter = 1;
+
+                var res_counter = start + 1;
                 var date_options = {year: "numeric", month: "long", day: "numeric"};
 
                 // Add results
@@ -62,51 +86,77 @@ bookwormjs: true
                         metrics_display += "&nbsp;&nbsp;" + bookworm_labels[metric] + ": " + doc[metric] + "<br />";
                     });
 
+                    var mltHtml = '';
+                    $.each(data.moreLikeThis[doc.url].docs, function(index, mltDoc) {
+                        mltHtml += mltDoc.magazine + " >> " +
+                            "<a href=\"" + mltDoc.url + "\" target=\"story\">" +
+                            mltDoc.title + "</a><br />";
+                    })
+
                     $('#results').append(
                         "<div class=\"result\" id=\"res-" + res_counter + "\">" +
-                        res_counter + ".&nbsp;<a href=\"" + doc.url + "\" target=\"story\">" +
-                        doc.magazine + " >> " + doc.title + "</a>" +
-                        "<p>" + doc.url + "<br />" +
+                        res_counter + ".&nbsp;" +
+                        doc.magazine + " >> <a href=\"" + doc.url + "\" target=\"story\">" +
+                        doc.title + "</a>" +
+                        "<div class=\"accordion\" id=\"det-" + res_counter + "\">"+
+                        "<h3 class=\"accordion\">Details</h3><div>" + doc.url + "<br />" +
                         "By " + doc.author.join(", ") + "<br />" +
                         "Published " + published_date.toLocaleDateString('en-us', date_options) + "<br />" +
-                        "Search Relevance: " + doc.score + "<br />" +
-//                        "<div class=\"toggler\">Show More Like This" +
-//                        "<div class=\"mlt\" id=\"mlt-" + res_counter + "\">More Like This</div>" +
-//                        "</div>"+
+                        "Search Relevance: " + doc.score + "</div>" +
+                        "<h3 class=\"accordion\">Metrics</h3><div><p>detailed metrics here...</p></div>" +
+                        "<h3 class=\"accordion\">Similar Stories</h3><div>" + mltHtml + "</div>" +
+                        "</div>"+
                         "</p></div>" +
                         "<hr />"
                     );
-
-//                    $('#mlt-' + res_counter).hide()
-
                     res_counter += 1;
                 });
-//                $('div.toggler').click(function() {
-//                    $(this).children().each( function() {
-//                        $(this).toggle();
-//                    });
-//                });
+                $( "div.accordion" ).each( function() {
+                    $(this).accordion({
+                        active: null,
+                        collapsible: true,
+                        animate: 50,
+                    });
+                });
             }
 
-            function searchStories(query, callbackName) {
-                // Wipe out prior results
-                $('#results').empty();
-                $('#searchStats').empty();
-                $('#searchStats').append("Searching...");
-                var params = 'q=' + query + '&wt=json&fl=*,score&rows=999999999';
-                searchBookworm(params, 'displayResults');
+            function newSearch() {
+                var q = $('#searchText').val();
+                if (q != '' && q.match(/"/g) % 2 == 0) {
+                    // Wipe out prior results
+                    $('#results').empty();
+                    $('#searchStats').empty();
+                    $('#searchStats').append("Searching...");
+                    searchStories(q,start,rows);
+                }
             }
 
+            function searchStories(q,s,r) {
+                var params = 'q=' + q +
+                    '&wt=json' +
+                    '&fl=magazine,title,url,id,author,pub_date,score,' + display_results.join() +
+                    '&mlt=true&mlt.fl=text' +
+                    '&mlt.count=' + mlt_count +
+                    '&rows=' + r +
+                    '&start=' + s;
+                solrSearch(params, 'displayResults');
+            }
+            // Search button
+            $('#searchButton').click(newSearch(start,rows));
+
+            /* Hook enter to search */
+            $('body').keypress(function(e) {
+                if (e.keyCode == '13') {
+                    newSearch(start,rows);
+                }
+            });
+
+            // Auto search after .5 seconds
             $('#searchText').keyup(function() {
               clearTimeout(thread);
               var $this = $(this);
-              thread = setTimeout(function(){searchStories($this.val())}, 500);
+              thread = setTimeout(function(){newSearch(start,rows)}, 500);
             });
 
-            /* attach a submit handler to the form */
-            $('#searchForm').submit(function(event) {
-                // Prevent default form submission
-                event.preventDefault();
-                searchStories($('#searchText').val());
-            });
+
         </script>

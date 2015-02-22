@@ -7,14 +7,29 @@ var search_url = 'http://bookworm.davidlday.com/public/scripts/storysearch.py';
 
 // Functions
 // General Search via JSONP
-function searchBookworm(params, callbackName) {
+function solrSearch(params, successCallback, errorCallback) {
+    //params = params.replace(/"/g, '\\"'); // Trying to get quoted stuff working
+    console.log(search_url + '?' + params);
     // Invoke search
     $.ajax({url: search_url + '?' + params,
         dataType: 'jsonp',
-        jsonpCallback: callbackName,
-        jsonp: 'json.wrf'
+        jsonpCallback: successCallback,
+        jsonp: 'json.wrf',
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(thrownError);
+        },
     });
 }
+
+// Cribbed from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+function getParameterByName(name) {
+    var def = (def != null) ? def : "";
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
 
 // Constants and Configs
 // Labels for Metrics
@@ -110,7 +125,7 @@ var histogram_settings = {
     gunning_fog_index: {
         title: bookworm_labels.gunning_fog_index,
         histogram: {
-            bucketSize: 0.5
+            bucketSize: 1.0
         },
     },
     lix: {

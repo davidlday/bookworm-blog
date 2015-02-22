@@ -96,8 +96,12 @@ bookwormjs: true
                 magazine_dashboard.bind(magazine_selector, charts);
 
                 $(document).ready( function() {
-                    var params = 'q=*&wt=json&fl=*,score&rows=999999999';
-                    searchBookworm(params, 'loadDataAndDraw');
+                    var f = ['url','magazine'];
+                    $.each( histogram_settings, function( metric ) {
+                        f.push(metric);
+                    });
+                    var params = 'q=*&wt=json&fl=' + f.join() + ',score&rows=999999999';
+                    solrSearch(params, 'loadDataAndDraw');
                 });
             };
         </script>
