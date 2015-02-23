@@ -221,14 +221,14 @@ bookwormjs: true
 
                     // Populate results div
                     $('#results').append(
-                        "<div class=\"result\" id=\"res-" + res_counter + "\">" +
+                        "<div class=\"result\" id=\"res-" + res_counter + "\"><h3>" +
                         res_counter + ".&nbsp;" +
                         doc.magazine + " >> <a href=\"" + doc.url + "\" target=\"story\">" +
-                        doc.title + "</a>" +
-                        "<br />" +
-                        "By " + doc.author.join(", ") + "<br />" +
+                        doc.title + "</a></h3>" +
+                        "<p>By " + doc.author.join(", ") + "<br />" +
                         "Published " + published_date.toLocaleDateString('en-us', date_options) + "<br />" +
                         "Search Relevance: " + doc.score +
+                        "</p>" +
                         "<div class=\"accordion\" id=\"det-" + res_counter + "\">"+
 //                        "<h3 class=\"accordion\">Details</h3>" +
 //                         "<div>" + doc.url + "<br />" +
