@@ -32,16 +32,15 @@
   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
   {% endif %}
 
-  {% if page.d3js %}
-  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  {% endif %}
-
   {% if page.jquery %}
   <!-- jQuery -->
   <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css">
-  <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
-  <script type="text/javascript" src="http://code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="/public/js/jquery.scrolltable.js"></script>
+  <script type="text/javascript" src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+  <script type="text/javascript" src="//code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="{{ site.baseurl }}public/js/jquery.scrolltable.js"></script>
+  <!-- Pagination -->
+  <script type="text/javascript" src="{{ site.baseurl }}public/js/jquery.twbsPagination.min.js"></script>
+  <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
   {% endif %}
 
   {% if page.bookwormjs %}

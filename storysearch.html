@@ -7,29 +7,141 @@ bookwormjs: true
 ---
 
         <style>
-        .accordion {
-            font-size: 62.5%;
-        }
-        .result p {
-            font-size: 75%;
-        }
+            .accordion {
+                font-size: 62.5%;
+            }
+            .result p {
+                font-size: 75%;
+            }
+            /*! Cribbed from http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.css
+             * CDN: http://www.bootstrapcdn.com/
+             */
+            .pagination {
+              display: inline-block;
+              padding-left: 0;
+              margin: 20px 0;
+              border-radius: 4px;
+            }
+            .pagination > li {
+              display: inline;
+            }
+            .pagination > li > a,
+            .pagination > li > span {
+              position: relative;
+              float: left;
+              padding: 6px 12px;
+              margin-left: -1px;
+              line-height: 1.42857143;
+              color: #337ab7;
+              text-decoration: none;
+              background-color: #fff;
+              border: 1px solid #ddd;
+            }
+            .pagination > li:first-child > a,
+            .pagination > li:first-child > span {
+              margin-left: 0;
+              border-top-left-radius: 4px;
+              border-bottom-left-radius: 4px;
+            }
+            .pagination > li:last-child > a,
+            .pagination > li:last-child > span {
+              border-top-right-radius: 4px;
+              border-bottom-right-radius: 4px;
+            }
+            .pagination > li > a:hover,
+            .pagination > li > span:hover,
+            .pagination > li > a:focus,
+            .pagination > li > span:focus {
+              color: #23527c;
+              background-color: #eee;
+              border-color: #ddd;
+            }
+            .pagination > .active > a,
+            .pagination > .active > span,
+            .pagination > .active > a:hover,
+            .pagination > .active > span:hover,
+            .pagination > .active > a:focus,
+            .pagination > .active > span:focus {
+              z-index: 2;
+              color: #fff;
+              cursor: default;
+              background-color: #337ab7;
+              border-color: #337ab7;
+            }
+            .pagination > .disabled > span,
+            .pagination > .disabled > span:hover,
+            .pagination > .disabled > span:focus,
+            .pagination > .disabled > a,
+            .pagination > .disabled > a:hover,
+            .pagination > .disabled > a:focus {
+              color: #777;
+              cursor: not-allowed;
+              background-color: #fff;
+              border-color: #ddd;
+            }
+            .pagination-lg > li > a,
+            .pagination-lg > li > span {
+              padding: 10px 16px;
+              font-size: 18px;
+            }
+            .pagination-lg > li:first-child > a,
+            .pagination-lg > li:first-child > span {
+              border-top-left-radius: 6px;
+              border-bottom-left-radius: 6px;
+            }
+            .pagination-lg > li:last-child > a,
+            .pagination-lg > li:last-child > span {
+              border-top-right-radius: 6px;
+              border-bottom-right-radius: 6px;
+            }
+            .pagination-sm > li > a,
+            .pagination-sm > li > span {
+              padding: 5px 10px;
+              font-size: 12px;
+            }
+            .pagination-sm > li:first-child > a,
+            .pagination-sm > li:first-child > span {
+              border-top-left-radius: 3px;
+              border-bottom-left-radius: 3px;
+            }
+            .pagination-sm > li:last-child > a,
+            .pagination-sm > li:last-child > span {
+              border-top-right-radius: 3px;
+              border-bottom-right-radius: 3px;
+            }
+            .text-center {
+                text-align: center;
+            }
         </style>
         <div id="search">
             <input id="searchText" type="text" style="width: 100%" placeholder="Search Stories..." />
+<!--
             <button id="searchButton">Search</button>
+ -->
         </div>
         <div id="searchStats"></div>
+        <div id="pagination-top" class="text-center">
+            <ul class="sync-pagination pagination-sm text-center"></ul>
+        </div>
         <div id="results"></div>
-        <div id="pagination">
+        <div id="pagination-bottom" class="text-center">
+            <ul class="sync-pagination pagination-sm text-center"></ul>
         </div>
 
         <script>
             // Get query text
-            $('#searchText').val(getParameterByName('q'));
-            // Get Page
+            var query = getParameterByName('q') || '';
             var start = Number(getParameterByName('s')) || 0;
-            var rows = Number(getParameterByName('r')) || 10;
-            var mlt_count = 10;
+            var current_page = Number(getParameterByName('p')) || 1;
+            // Default Pagination
+            var rows = 10;
+            var mlt_count = 5;
+            var default_rows = 10;
+//             var start_page = start / rows;
+            var total_results = 0;
+            var total_pages = 0;
+            var current_page = 1;
+//             var paginator;
 
             // Controls what metrics are displayed.
             var display_results = [
@@ -50,33 +162,46 @@ bookwormjs: true
                 'lix',
             ];
 
-            var thread = null;
-
-            function displayResults(data) {
-
-                console.log(data);
-
-                start = Number(data.responseHeader.params.start) || 0;
-                rows = Number(data.responseHeader.params.rows) || 10;
-                query = data.responseHeader.params.q;
-
-                // Create Link
-                var result_link = "?q=" + query +
-                    "&s=" + start +
-                    "&r=" + rows;
+            function displayAjaxError(thrownMessage) {
                 // Update results stats
                 $('#searchStats').empty();
                 $('#searchStats').append(
-                    "Found " + data.response.numFound + " stories.<br />" +
-                    "<a href=\"" + result_link + "\">Link to this result page.</a><br />" +
+                    "<p>Something went wrong. Please check your query and try again.</p>"
+                );
+                console.log(thrownMessage);
+            }
+
+            // Callback to show search results
+            function displayResults(data) {
+
+                // Refresh Global Variables
+                start = Number( data.responseHeader.params.start ) || 0;
+                rows = Number( data.responseHeader.params.rows ) || 10;
+                query = data.responseHeader.params.q;
+//                 start_page = start / rows;
+                total_results = data.response.numFound;
+                total_pages = Math.ceil( total_results / rows );
+                current_page = Math.ceil( (start / rows) + 1 );
+
+                page_begin = start + 1;
+                page_end = ( (start + rows) < total_results) ? (start + rows) : total_results;
+
+                // Create Link
+                var result_link = "?q=" + query +
+                    "&p=" + current_page;
+
+                // Update results stats div
+                $('#searchStats').empty();
+                $('#searchStats').append(
+                    "Found " + data.response.numFound + " stories. Showing " + page_begin + "-" + page_end + ".<br />" +
+//                     "<a href=\"" + result_link + "\">Link to this result page.</a><br />" +
                     "<hr />"
 
                 );
 
+                // Add results
                 var res_counter = start + 1;
                 var date_options = {year: "numeric", month: "long", day: "numeric"};
-
-                // Add results
                 $.each(data.response.docs, function(index, doc) {
                     var published_date = new Date(doc.pub_date);
 
@@ -86,6 +211,7 @@ bookwormjs: true
                         metrics_display += "&nbsp;&nbsp;" + bookworm_labels[metric] + ": " + doc[metric] + "<br />";
                     });
 
+                    // Generate More Like This Links
                     var mltHtml = '';
                     $.each(data.moreLikeThis[doc.url].docs, function(index, mltDoc) {
                         mltHtml += mltDoc.magazine + " >> " +
@@ -93,17 +219,24 @@ bookwormjs: true
                             mltDoc.title + "</a><br />";
                     })
 
+                    // Populate results div
                     $('#results').append(
                         "<div class=\"result\" id=\"res-" + res_counter + "\">" +
                         res_counter + ".&nbsp;" +
                         doc.magazine + " >> <a href=\"" + doc.url + "\" target=\"story\">" +
                         doc.title + "</a>" +
-                        "<div class=\"accordion\" id=\"det-" + res_counter + "\">"+
-                        "<h3 class=\"accordion\">Details</h3><div>" + doc.url + "<br />" +
+                        "<br />" +
                         "By " + doc.author.join(", ") + "<br />" +
                         "Published " + published_date.toLocaleDateString('en-us', date_options) + "<br />" +
-                        "Search Relevance: " + doc.score + "</div>" +
-                        "<h3 class=\"accordion\">Metrics</h3><div><p>detailed metrics here...</p></div>" +
+                        "Search Relevance: " + doc.score +
+                        "<div class=\"accordion\" id=\"det-" + res_counter + "\">"+
+//                        "<h3 class=\"accordion\">Details</h3>" +
+//                         "<div>" + doc.url + "<br />" +
+//                         "By " + doc.author.join(", ") + "<br />" +
+//                         "Published " + published_date.toLocaleDateString('en-us', date_options) + "<br />" +
+//                         "Search Relevance: " + doc.score +
+//                         "</div>" +
+//                        "<h3 class=\"accordion\">Metrics</h3><div><p>detailed metrics here...</p></div>" +
                         "<h3 class=\"accordion\">Similar Stories</h3><div>" + mltHtml + "</div>" +
                         "</div>"+
                         "</p></div>" +
@@ -111,6 +244,8 @@ bookwormjs: true
                     );
                     res_counter += 1;
                 });
+
+                // Collapse all accordions.
                 $( "div.accordion" ).each( function() {
                     $(this).accordion({
                         active: null,
@@ -118,45 +253,55 @@ bookwormjs: true
                         animate: 50,
                     });
                 });
+
+                // Refresh pagination
+                $('.sync-pagination').twbsPagination({
+                    totalPages: total_pages,
+                    startPage:  current_page,
+                    onPageClick: function (event, page) {
+                        new_start = (page - 1) * rows;
+                        window.location.href = '?q=' + query +
+                            "&s=" + new_start;
+                    }
+                });
+
             }
 
-            function newSearch() {
-                var q = $('#searchText').val();
-                if (q != '' && q.match(/"/g) % 2 == 0) {
-                    // Wipe out prior results
-                    $('#results').empty();
-                    $('#searchStats').empty();
-                    $('#searchStats').append("Searching...");
-                    searchStories(q,start,rows);
-                }
-            }
-
-            function searchStories(q,s,r) {
-                var params = 'q=' + q +
+            // Common Search
+            function searchStories(query,start,rows,callback) {
+                // Wipe out prior results
+                $('#results').empty();
+                // Craft search parameters
+                var params = 'q=' + query +
                     '&wt=json' +
                     '&fl=magazine,title,url,id,author,pub_date,score,' + display_results.join() +
                     '&mlt=true&mlt.fl=text' +
                     '&mlt.count=' + mlt_count +
-                    '&rows=' + r +
-                    '&start=' + s;
-                solrSearch(params, 'displayResults');
+                    '&rows=' + rows +
+                    '&start=' + start;
+                // Invoke Search
+                solrSearch(params, callback, displayAjaxError);
             }
-            // Search button
-            $('#searchButton').click(newSearch(start,rows));
 
-            /* Hook enter to search */
+            // Search button
+//              $('#searchButton').click(newSearch(start,rows));
+
+            // Hook enter to search
             $('body').keypress(function(e) {
                 if (e.keyCode == '13') {
-                    newSearch(start,rows);
+                    query = $('#searchText').val();
+                    window.location.href = '?q=' + query;
                 }
             });
 
-            // Auto search after .5 seconds
-            $('#searchText').keyup(function() {
-              clearTimeout(thread);
-              var $this = $(this);
-              thread = setTimeout(function(){newSearch(start,rows)}, 500);
+            // Perform the search if ready
+            $(document).ready(function () {
+                if (query != null && query != '') {
+                    $('#searchText').val(query);
+                    $('#searchStats').empty();
+                    $('#searchStats').append("Searching...");
+                    searchStories(query, start, rows, 'displayResults');
+                }
             });
-
 
         </script>

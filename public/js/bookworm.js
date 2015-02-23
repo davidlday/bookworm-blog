@@ -8,15 +8,13 @@ var search_url = 'http://bookworm.davidlday.com/public/scripts/storysearch.py';
 // Functions
 // General Search via JSONP
 function solrSearch(params, successCallback, errorCallback) {
-    //params = params.replace(/"/g, '\\"'); // Trying to get quoted stuff working
-    console.log(search_url + '?' + params);
     // Invoke search
     $.ajax({url: search_url + '?' + params,
         dataType: 'jsonp',
         jsonpCallback: successCallback,
         jsonp: 'json.wrf',
         error: function (xhr, ajaxOptions, thrownError) {
-            console.log(thrownError);
+            errorCallback(thrownError);
         },
     });
 }
