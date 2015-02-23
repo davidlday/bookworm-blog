@@ -24,6 +24,7 @@ Reference Material:
 
 * [Ideosity: Readability Tests and Formulas](http://www.ideosity.com/ourblog/post/ideosphere-blog/2010/01/14/readability-tests-and-formulas)
 * [Gender, Genre, and Writing Style in Formal Written Texts](http://u.cs.biu.ac.il/~koppel/papers/male-female-text-final.pdf)
+* [How MoreLikeThis Works In Lucene](http://cephas.net/blog/2008/03/30/how-morelikethis-works-in-lucene/) - How I currently get "Similar Stories" in the search results.
 
 Utilities:
 
