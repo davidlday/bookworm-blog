@@ -16,7 +16,7 @@ var urls = {
 var date_options = {year: "numeric", month: "long", day: "numeric"};
 
 // Functions
-// General Search via JSONP
+// General Search
 function solrSearch(params, successCallback, errorCallback) {
     $.ajax({type: "GET",
         url: urls.search + '?' + params,
@@ -31,9 +31,12 @@ function solrSearch(params, successCallback, errorCallback) {
     });
 }
 
-// General MoreLikeThis via JSONP
+// General MoreLikeThis
 function solrMoreLikeThisText(text, successCallback, errorCallback) {
-    var post_data = {'stream.body': text};
+    var post_data = {
+        'stream.body': text,
+        rows: 20,
+    };
     $.ajax({type: "POST",
         url: urls.mlt,
         crossDomain: true,
