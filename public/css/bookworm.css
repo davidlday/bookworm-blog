@@ -19,6 +19,9 @@ textarea.storyText {
 .text-center {
     text-align: center;
 }
+.text-right {
+    text-align: right;
+}
 
 /*! Cribbed from http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.css
  * CDN: http://www.bootstrapcdn.com/

@@ -101,7 +101,7 @@ bookwormjs: true
                         f.push(metric);
                     });
                     var params = 'q=*&wt=json&fl=' + f.join() + ',score&rows=999999999';
-                    solrSearch(params, 'loadDataAndDraw');
+                    solrSearch(params, loadDataAndDraw);
                 });
             };
         </script>

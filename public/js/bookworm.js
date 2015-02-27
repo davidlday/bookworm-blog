@@ -3,23 +3,64 @@
 */
 
 // URLs
-var urls = {
-    // search script
-    search: 'http://bookworm.davidlday.com/public/scripts/storysearch.py',
-    // MoreLikeThis script
-    mlt: 'http://bookworm.davidlday.com/public/scripts/storieslikethis.py',
-    // Analyzer script
-    analyzer: 'http://bookworm.davidlday.com/public/scripts/analyze.py',
-}
 
-// Date Options for use with Publication Date
-var date_options = {year: "numeric", month: "long", day: "numeric"};
+// Defaults
+var defaults = {
+    // Date display options
+    date_options: {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    },
+    // Controls what metrics are displayed.
+    display_results: [
+        'syllable_count',
+        'word_count',
+        'sentence_count',
+        'avg_syllables_per_word',
+        'avg_words_per_sentence',
+        'dialogue_word_percentage',
+        'pov',
+        'coleman_liau_index',
+        'automated_readability_index',
+        'flesch_kincaid_grade_level',
+        'smog_index',
+        'flesch_reading_ease',
+        'gunning_fog_index',
+        'rix',
+        'lix',
+    ],
+    // URLs
+    urls: {
+        // search script
+        search: 'http://bookworm.davidlday.com/public/scripts/storysearch.py',
+        // MoreLikeThis script
+        mlt: 'http://bookworm.davidlday.com/public/scripts/storieslikethis.py',
+        // Analyzer script
+        analyzer: 'http://bookworm.davidlday.com/public/scripts/analyze.py',
+    },
+    // Controls Google Charts Histograms
+    histogram_settings: {
+        legend:    {
+            position: 'none'},
+        enableInteractivity: true,
+        chartArea: {
+            width: '80%',
+            height: '80%',
+        },
+        vAxis: {
+            gridlines: {
+                count: -1,
+            },
+        },
+    },
+};
 
 // Functions
 // General Search
 function solrSearch(params, successCallback, errorCallback) {
     $.ajax({type: "GET",
-        url: urls.search + '?' + params,
+        url: defaults.urls.search + '?' + params,
         crossDomain: true,
         dataType: 'json',
         success: function(result) {
@@ -36,14 +77,19 @@ function solrMoreLikeThisText(text, successCallback, errorCallback) {
     var post_data = {
         'stream.body': text,
         rows: 20,
+        'mlt.match.include': true,
+        fl: '*,score',
+        'mlt.interestingTerms': 'details',
+        'mlt.stopWordsFile': 'lang/stopwords_en.txt',
+        'mlt.minwl': 3,
     };
     $.ajax({type: "POST",
-        url: urls.mlt,
+        url: defaults.urls.mlt,
         crossDomain: true,
         data: post_data,
         dataType: 'json',
-        success: function(result) {
-            successCallback(result)
+        success: function(data) {
+            successCallback(data.response.docs)
         },
         error: function (xhr, ajaxOptions, thrownError) {
             errorCallback(thrownError);
@@ -56,16 +102,53 @@ function analyzeText(txt, successCallback, errorCallback) {
     var post_data = {'text': txt};
     $.ajax({
         type: "POST",
-        url: urls.analyzer,
+        url: defaults.urls.analyzer,
         crossDomain: true,
         data: post_data,
         dataType: 'json',
-        success: function(result) {
-            successCallback(result);
+        success: function(data) {
+            successCallback(data);
         },
         error: function (xhr, ajaxOptions, thrownError) {
             errorCallback(thrownError);
         },
+    });
+}
+
+// Add stories to mlt table body
+function populateMltTableBody(mltTableBody, docs) {
+    $.each(docs, function(index, doc) {
+        var published_date = new Date(doc.pub_date);
+        $(mltTableBody).append(
+            "<tr id=\"mlt-" + index + "\">" +
+            "<td><a href=\"" +doc.url + "\" target=\"story\">" + doc.title + "</a></td>" +
+            "<td>" + doc.author.join() + "</td>" +
+            "<td>" + doc.magazine + "</td>" +
+            "<td>" + published_date.toLocaleDateString('en-us', defaults.date_options) + "</td>" +
+            "</tr>"
+        );
+    });
+}
+
+// Add metrics to analysis table body
+function populateAnalysisTableBody(analysisTableBody, display_metrics, data) {
+    // Add results to summary table
+    $.each(display_metrics, function(index, metric) {
+        var formatted_value = data[metric];
+        if (!isNaN(data[metric])) {
+            var value = Number(data[metric]);
+            if (Number.isInteger(value)) {
+                formatted_value = value;
+            } else {
+                formatted_value = Number(value).toFixed(4);
+            }
+        }
+        $(analysisTableBody).append(
+            "<tr id=\"" + metric + "\">" +
+            "<td>" + bookworm_labels[metric] + "</td>" +
+            "<td class=\"text-right\">" + formatted_value + "</td>" +
+            "</tr>"
+        );
     });
 }
 
@@ -77,7 +160,6 @@ function getParameterByName(name) {
         results = regex.exec(location.search);
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
-
 
 // Constants and Configs
 // Labels for Metrics
@@ -108,25 +190,7 @@ var bookworm_labels = {
     pov: "Point of View",
 };
 
-// Histogram Configurations
-// TODO: Define for all metrics
-// Default Options
-var default_histogram_settings = {
-    legend:    {
-        position: 'none'},
-    enableInteractivity: true,
-    chartArea: {
-        width: '80%',
-        height: '80%',
-    },
-    vAxis: {
-        gridlines: {
-            count: -1,
-        },
-    },
-};
-
-// Specific Options
+// Histogram Specific Options
 var histogram_settings = {
     word_count: {
         title: bookworm_labels.word_count,
@@ -196,11 +260,11 @@ var histogram_settings = {
     },
 };
 
-// Merge Default Options into Specific Options
-for (var attr in default_histogram_settings) {
+// Merge Default Histogram Options into Specific Options
+for (var attr in defaults.histogram_settings) {
     for (var setting in histogram_settings) {
         if (!histogram_settings[setting][attr]) {
-            histogram_settings[setting][attr] = default_histogram_settings[attr];
+            histogram_settings[setting][attr] = defaults.histogram_settings[attr];
         }
     }
 }

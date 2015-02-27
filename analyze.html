@@ -14,15 +14,18 @@ TODO:
 -->
 
 
-        <p>Use this form to analyze a piece of writing with the same algorithms I use. Some important points:</p>
-        <ul>
-            <li>Nothing from this is saved anywhere. Not the story; not the results. If you want to save your results, write them down or print the page.</li>
-            <li>Plain text only.</li>
-            <li>Everything between double quotes (") is considered dialogue.</li>
-            <li>Section separators (e.g. #) are ignored. Actually, this isn't important right now, but may be at some point.</li>
-            <li>Paragraphs are separated by a line breaks (return). Multiple consecutive line breaks are considered as one.</li>
-            <li>The formulae for the readability scores vary. What you get here may not exactly match what you get somewhere else, but it's close enough.</li>
-        </ul>
+        <p>Use this form to analyze a piece of writing with the same algorithms I use.</p>
+        <div id="hints" class="font-75">
+            <h3>Caveats</h3>
+            <ul>
+                <li>Nothing from this form is saved anywhere.</li>
+                <li>Plain text only.</li>
+                <li>Everything between double quotes (") is considered dialogue.</li>
+                <li>Section separators (e.g. #) are ignored.</li>
+                <li>Paragraphs are separated by one or more line breaks (return). Multiple consecutive line breaks are considered as one.</li>
+                <li>The formulae for the readability scores vary across implementations. Scores here may not exactly match scores from another tool.</li>
+            </ul>
+        </div>
 
         <div id="story">
             <textarea id="storyText" class="storyText" placeholder="Paste story here..."></textarea>
@@ -31,17 +34,25 @@ TODO:
         <div id="results-message" style="display: none;">Running Bookworm analysis and searching for similar stories...</div>
         <div id="results" class="accordion font-75" style="display: none;">
             <h3>Bookworm Analysis</h3>
-            <table class="scrollTable" cellpadding="0" cellspacing="0" border="0" id="analysisTable">
+            <table class="scrollTable" id="analysisTable">
                 <thead id="analysisTableHead">
-                    <tr><td>Metric</td><td>Value</td></tr>
+                    <tr>
+                        <td>Metric</td>
+                        <td>Value</td>
+                    </tr>
                 </thead>
                 <tbody id="analysisTableBody">
                 </tbody>
             </table>
-            <h3>Similar Stories</h2>
-            <table class="scrollTable" cellpadding="0" cellspacing="0" border="0" id="mltTable">
+            <h3>Similar Stories</h3>
+            <table class="scrollTable" id="mltTable">
                 <thead id="mltTableHead">
-                    <tr><td>Title</td><td>Author</td><td>Magazine</td><td>Published Date</td></tr>
+                    <tr>
+                        <td>Title</td>
+                        <td>Author</td>
+                        <td>Magazine</td>
+                        <td>Published</td>
+                    </tr>
                 </thead>
                 <tbody id="mltTableBody">
                 </tbody>
@@ -50,31 +61,29 @@ TODO:
 
         <script>
             // Controls what return values are displayed in the table.
-            var display_results = {
-                syllable_count: "Total Syllable Count",
-                word_count: "Total Word Count",
-                sentence_count: "Total Sentence Count",
-                avg_syllables_per_word: "Avg. Syllables per Word",
-                avg_words_per_sentence: "Avg. Words per Sentence",
-
-                dialogue_syllable_count: "Dialogue Syllable Count",
-                dialogue_word_count: "Dialogue Word Count",
-                narrative_syllable_count: "Narrative Syllable Count",
-                narrative_word_count: "Narrative Word Count",
-                dialogue_syllable_percentage: "Percent Dialogue (Syllables)",
-                dialogue_word_percentage: "Percent Dialogue (Words)",
-
-                pov: "Point of View",
-
-                coleman_liau_index: "Readability: Coleman Liau Index",
-                automated_readability_index: "Readability: Automated Readability Index",
-                flesch_kincaid_grade_level: "Readability: Flesch Kincaid Grade Level",
-                smog_index: "Readability: SMOG Index",
-                flesch_reading_ease: "Readability: Flesch Reading Ease",
-                gunning_fog_index: "Readability: Gunning Fog Index",
-                rix: "Readability: RIX",
-                lix: "Readability: LIX",
-            };
+            var display_results = defaults.display_results;
+//             [
+//                 'syllable_count',
+//                 'word_count',
+//                 'sentence_count',
+//                 'avg_syllables_per_word',
+//                 'avg_words_per_sentence',
+//                 'dialogue_syllable_count',
+//                 'dialogue_word_count',
+//                 'narrative_syllable_count',
+//                 'narrative_word_count',
+//                 'dialogue_syllable_percentage',
+//                 'dialogue_word_percentage',
+//                 'pov',
+//                 'coleman_liau_index',
+//                 'automated_readability_index',
+//                 'flesch_kincaid_grade_level',
+//                 'smog_index',
+//                 'flesch_reading_ease',
+//                 'gunning_fog_index',
+//                 'rix',
+//                 'lix',
+//             ];
 
             // Search button
             $('#analyzeButton').click( analyzeStory );
@@ -98,16 +107,10 @@ TODO:
                 }
             }
 
+            // Show analysis
             function displayAnalysis(data) {
-                // Add results to summary table
-                $.each(display_results, function(key, value) {
-                    $('#analysisTableBody').append(
-                        "<tr id=\"" + key + "\">" +
-                        "<td>" + value + "</td>" +
-                        "<td>" + data[key] + "</td>" +
-                        "</tr>"
-                    );
-                });
+                // Populate analysis results
+                populateAnalysisTableBody('#analysisTableBody', display_results, data);
                 // Collapse all accordions.
                 $( "div.accordion" ).each( function() {
                     $(this).accordion({
@@ -116,7 +119,6 @@ TODO:
                         animate: 50,
                     });
                 });
-
                 // Show the results div
                 $('#results-message').hide();
                 $('#results').show();
@@ -124,18 +126,7 @@ TODO:
 
             // Show similar stories
             function displaySimilarStories(data) {
-                // Add stories to mlt table
-                $.each(data.response.docs, function(index, doc) {
-                    var published_date = new Date(doc.pub_date);
-                    $('#mltTableBody').append(
-                        "<tr id=\"mlt-" + index + "\">" +
-                        "<td><a href=\"" +doc.url + "\" target=\"story\">" + doc.title + "</a></td>" +
-                        "<td>" + doc.author.join() + "</td>" +
-                        "<td>" + doc.magazine + "</td>" +
-                        "<td>" + published_date.toLocaleDateString('en-us', date_options) + "</td>" +
-                        "</tr>"
-                    );
-                });
+                populateMltTableBody('#mltTableBody', data);
             }
 
             // Log Ajax Error
@@ -143,33 +134,8 @@ TODO:
                 console.log(thrownMessage);
             }
 
-            /* attach a submit handler to the form */
-//             $("#analysisForm").submit(function(event) {
-//                 // Prevent default form submission
-//                 event.preventDefault();
-//
-//                 // Wipe out prior results
-//                 $('#analysisTableBody').empty();
-//
-//                 var story = $( 'textarea#storyText').val();
-//                 var url = $(this).attr('action');
-//
-//                 // Invoke analysis
-//                 $.post(url,
-//                     {text: story},
-//                     function(data) {
-//                         // Add results to summary table
-//                         $.each(display_results, function(key, value) {
-//                             $('#analysisTableBody').append(
-//                                 "<tr id=\"" + key + "\">" +
-//                                 "<td>" + value + "</td>" +
-//                                 "<td>" + data[key] + "</td>" +
-//                                 "</tr>"
-//                             );
-//                         });
-//                     },
-//                     'json'
-//                 );
-//
-//             });
+            $( document ).ready( function() {
+
+            });
+
         </script>
