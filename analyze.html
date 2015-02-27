@@ -3,6 +3,7 @@ layout: page
 title: Analyzer
 comments: false
 jquery: true
+bookwormjs: true
 ---
         <style type="text/css">
             textarea#storyText {
@@ -44,14 +45,13 @@ jquery: true
             <li>Don't send your novel through. This is for short stories only (say, less than 10,000 words).</li>
         </ul>
 
-        <div id="form">
-            <form action="http://bookworm.davidlday.com/public/scripts/analyze.py" id="analysisForm">
-                <textarea id="storyText" placeholder="Paste story here..."></textarea>
-                <input type="submit" value="Analyze" />
-            </form>
+        <div id="story">
+            <textarea id="storyText" placeholder="Paste story here..."></textarea>
+            <button id="analyzeButton">Analyze</button>
         </div>
-        <div id="results">
-<!--            <textarea id="results_text" placeholder="Results will show here."></textarea> -->
+        <div id="results-message" style="display: none;">Running Bookworm analysis...</div>
+        <div id="results" style="display: none;">
+            <h2>Analysis Results</h2>
             <table class="scrollTable" cellpadding="0" cellspacing="0" border="0" id="summaryTable">
                 <thead id="summaryTableHead">
                     <tr><td>Measure</td><td>Value</td></tr>
@@ -59,7 +59,17 @@ jquery: true
                 <tbody id="summaryTableBody">
                 </tbody>
             </table>
-
+        </div>
+        <div id="mlt-message" style="display: none;">Searching for similar stories...</div>
+        <div id="mlt" style="display: none;">
+            <h2>Similar Stories</h2>
+            <table class="scrollTable" cellpadding="0" cellspacing="0" border="0" id="mltTable">
+                <thead id="mltTableHead">
+                    <tr><td>Title</td><td>Author</td><td>Magazine</td><td>Published Date</td></tr>
+                </thead>
+                <tbody id="mltTableBody">
+                </tbody>
+            </table>
         </div>
 
         <script>
@@ -90,33 +100,91 @@ jquery: true
                 lix: "Readability: LIX",
             };
 
-            /* attach a submit handler to the form */
-            $("#analysisForm").submit(function(event) {
-                // Prevent default form submission
-                event.preventDefault();
+            // Search button
+            $('#analyzeButton').click( analyzeStory );
+
+            // Local function to analyze the story
+            function analyzeStory() {
+                $('#mlt-message').show();
+                $('#mlt').hide();
+                $('#results-message').show();
+                $('#results').hide();
 
                 // Wipe out prior results
                 $('#summaryTableBody').empty();
+                $('#mltTableBody').empty();
 
-                var story = $( 'textarea#storyText').val();
-                var url = $(this).attr('action');
+                var story = $('#storyText').val();
+                if (story != null && story != '') {
+                    analyzeText(story, displayAnalysis, displayAjaxError);
+                    solrMoreLikeThisText(story, displaySimilarStories, displayAjaxError);
+                }
+            }
 
-                // Invoke analysis
-                $.post(url,
-                    {text: story},
-                    function(data) {
-                        // Add results to summary table
-                        $.each(display_results, function(key, value) {
-                            $('#summaryTableBody').append(
-                                "<tr id=\"" + key + "\">" +
-                                "<td>" + value + "</td>" +
-                                "<td>" + data[key] + "</td>" +
-                                "</tr>"
-                            );
-                        });
-                    },
-                    'json'
-                );
+            function displayAnalysis(data) {
+                // Add results to summary table
+                $.each(display_results, function(key, value) {
+                    $('#summaryTableBody').append(
+                        "<tr id=\"" + key + "\">" +
+                        "<td>" + value + "</td>" +
+                        "<td>" + data[key] + "</td>" +
+                        "</tr>"
+                    );
+                });
+                $('#results-message').hide();
+                $('#results').show();
+            }
 
-            });
+            // Show similar stories
+            function displaySimilarStories(data) {
+                // Add stories to mlt table
+                $.each(data.response.docs, function(index, doc) {
+                    var published_date = new Date(doc.pub_date);
+                    $('#mltTableBody').append(
+                        "<tr id=\"mlt-" + index + "\">" +
+                        "<td><a href=\"" +doc.url + "\">" + doc.title + "</a></td>" +
+                        "<td>" + doc.author.join() + "</td>" +
+                        "<td>" + doc.magazine + "</td>" +
+                        "<td>" + published_date.toLocaleDateString('en-us', date_options) + "</td>" +
+                        "</tr>"
+                    );
+                });
+                $('#mlt-message').hide();
+                $('#mlt').show();
+            }
+
+            // Log Ajax Error
+            function displayAjaxError(thrownMessage) {
+                console.log(thrownMessage);
+            }
+
+            /* attach a submit handler to the form */
+//             $("#analysisForm").submit(function(event) {
+//                 // Prevent default form submission
+//                 event.preventDefault();
+//
+//                 // Wipe out prior results
+//                 $('#summaryTableBody').empty();
+//
+//                 var story = $( 'textarea#storyText').val();
+//                 var url = $(this).attr('action');
+//
+//                 // Invoke analysis
+//                 $.post(url,
+//                     {text: story},
+//                     function(data) {
+//                         // Add results to summary table
+//                         $.each(display_results, function(key, value) {
+//                             $('#summaryTableBody').append(
+//                                 "<tr id=\"" + key + "\">" +
+//                                 "<td>" + value + "</td>" +
+//                                 "<td>" + data[key] + "</td>" +
+//                                 "</tr>"
+//                             );
+//                         });
+//                     },
+//                     'json'
+//                 );
+//
+//             });
         </script>

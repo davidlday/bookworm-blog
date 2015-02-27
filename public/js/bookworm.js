@@ -2,17 +2,64 @@
 * Common Bookworm JavaScript
 */
 
-// URL of search script
-var search_url = 'http://bookworm.davidlday.com/public/scripts/storysearch.py';
+// URLs
+var urls = {
+    // search script
+    search: 'http://bookworm.davidlday.com/public/scripts/storysearch.py',
+    // MoreLikeThis script
+    mlt: 'http://bookworm.davidlday.com/public/scripts/storieslikethis.py',
+    // Analyzer script
+    analyzer: 'http://bookworm.davidlday.com/public/scripts/analyze.py',
+}
+
+// Date Options for use with Publication Date
+var date_options = {year: "numeric", month: "long", day: "numeric"};
 
 // Functions
 // General Search via JSONP
 function solrSearch(params, successCallback, errorCallback) {
-    // Invoke search
-    $.ajax({url: search_url + '?' + params,
-        dataType: 'jsonp',
-        jsonpCallback: successCallback,
-        jsonp: 'json.wrf',
+    $.ajax({type: "GET",
+        url: urls.search + '?' + params,
+        crossDomain: true,
+        dataType: 'json',
+        success: function(result) {
+            successCallback(result)
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            errorCallback(thrownError);
+        },
+    });
+}
+
+// General MoreLikeThis via JSONP
+function solrMoreLikeThisText(text, successCallback, errorCallback) {
+    var post_data = {'stream.body': text};
+    $.ajax({type: "POST",
+        url: urls.mlt,
+        crossDomain: true,
+        data: post_data,
+        dataType: 'json',
+        success: function(result) {
+            successCallback(result)
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            errorCallback(thrownError);
+        },
+    });
+}
+
+// Analyze Text using Bookworm Utility Script
+function analyzeText(txt, successCallback, errorCallback) {
+    var post_data = {'text': txt};
+    $.ajax({
+        type: "POST",
+        url: urls.analyzer,
+        crossDomain: true,
+        data: post_data,
+        dataType: 'json',
+        success: function(result) {
+            successCallback(result);
+        },
         error: function (xhr, ajaxOptions, thrownError) {
             errorCallback(thrownError);
         },
@@ -149,6 +196,8 @@ var histogram_settings = {
 // Merge Default Options into Specific Options
 for (var attr in default_histogram_settings) {
     for (var setting in histogram_settings) {
-        histogram_settings[setting][attr] = default_histogram_settings[attr];
+        if (!histogram_settings[setting][attr]) {
+            histogram_settings[setting][attr] = default_histogram_settings[attr];
+        }
     }
 }

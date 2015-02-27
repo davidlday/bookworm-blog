@@ -14,6 +14,7 @@ cgitb.enable()
 fs = cgi.FieldStorage()
 
 text = fs.getvalue('text').decode('utf-8')
+json_output = '';
 
 result = {}
 
@@ -55,8 +56,16 @@ result['narrative_syllable_count'] = result['syllable_count'] - result['dialogue
 result['dialogue_word_percentage'] = result['dialogue_word_count'] / result['word_count'] * 100
 result['dialogue_syllable_percentage'] = result['dialogue_syllable_count'] / result['syllable_count'] * 100
 
+json_output = json.dumps(result,indent=1)
 
-sys.stdout.write("Content-Type: application/json;charset=utf-8\n\n")
-sys.stdout.write(json.dumps(result,indent=1))
-sys.stdout.write("\n")
-sys.stdout.close()
+if 'callback' in fs:
+    callback = fs.getvalue('callback').decode('utf-8')
+    json_output = callback + "(" + json_output + ")"
+
+sys.stdout.write( "Content-Type: application/json;charset=utf-8" )
+sys.stdout.write( "\n" )
+sys.stdout.write( "Access-Control-Allow-Origin: *" )
+sys.stdout.write( "\n" )
+sys.stdout.write( "\n" )
+sys.stdout.write( json_output )
+sys.stdout.write( "\n" )

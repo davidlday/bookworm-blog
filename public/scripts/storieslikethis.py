@@ -5,7 +5,7 @@ import cgi
 import urllib
 import urllib2
 
-solr_url = 'http://localhost:27373/solr/collection1/select'
+solr_url = 'http://localhost:27373/solr/collection1/mlt'
 content_type = '';
 results = '';
 

@@ -137,11 +137,9 @@ bookwormjs: true
             var rows = 10;
             var mlt_count = 5;
             var default_rows = 10;
-//             var start_page = start / rows;
             var total_results = 0;
             var total_pages = 0;
             var current_page = 1;
-//             var paginator;
 
             // Controls what metrics are displayed.
             var display_results = [
@@ -178,7 +176,6 @@ bookwormjs: true
                 start = Number( data.responseHeader.params.start ) || 0;
                 rows = Number( data.responseHeader.params.rows ) || 10;
                 query = data.responseHeader.params.q;
-//                 start_page = start / rows;
                 total_results = data.response.numFound;
                 total_pages = Math.ceil( total_results / rows );
                 current_page = Math.ceil( (start / rows) + 1 );
@@ -194,14 +191,13 @@ bookwormjs: true
                 $('#searchStats').empty();
                 $('#searchStats').append(
                     "Found " + data.response.numFound + " stories. Showing " + page_begin + "-" + page_end + ".<br />" +
-//                     "<a href=\"" + result_link + "\">Link to this result page.</a><br />" +
                     "<hr />"
 
                 );
 
                 // Add results
                 var res_counter = start + 1;
-                var date_options = {year: "numeric", month: "long", day: "numeric"};
+//                 var date_options = {year: "numeric", month: "long", day: "numeric"};
                 $.each(data.response.docs, function(index, doc) {
                     var published_date = new Date(doc.pub_date);
 
@@ -283,9 +279,6 @@ bookwormjs: true
                 solrSearch(params, callback, displayAjaxError);
             }
 
-            // Search button
-//              $('#searchButton').click(newSearch(start,rows));
-
             // Hook enter to search
             $('body').keypress(function(e) {
                 if (e.keyCode == '13') {
@@ -300,7 +293,7 @@ bookwormjs: true
                     $('#searchText').val(query);
                     $('#searchStats').empty();
                     $('#searchStats').append("Searching...");
-                    searchStories(query, start, rows, 'displayResults');
+                    searchStories(query, start, rows, displayResults);
                 }
             });
 
