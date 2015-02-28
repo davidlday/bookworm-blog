@@ -31,30 +31,14 @@ TODO:
             var current_page = Number(getParameterByName('p')) || 1;
             // Default Pagination
             var rows = 10;
-            var mlt_count = 5;
+//             var mlt_count = 5;
             var default_rows = 10;
             var total_results = 0;
             var total_pages = 0;
             var current_page = 1;
 
             // Controls what metrics are displayed.
-            var display_results = [
-                'syllable_count',
-                'word_count',
-                'sentence_count',
-                'avg_syllables_per_word',
-                'avg_words_per_sentence',
-                'dialogue_word_percentage',
-                'pov',
-                'coleman_liau_index',
-                'automated_readability_index',
-                'flesch_kincaid_grade_level',
-                'smog_index',
-                'flesch_reading_ease',
-                'gunning_fog_index',
-                'rix',
-                'lix',
-            ];
+            var display_results = bwconfig.display_results;
 
             function displayAjaxError(thrownMessage) {
                 // Update results stats
@@ -76,12 +60,9 @@ TODO:
                 total_pages = Math.ceil( total_results / rows );
                 current_page = Math.ceil( (start / rows) + 1 );
 
-                page_begin = start + 1;
-                page_end = ( (start + rows) < total_results) ? (start + rows) : total_results;
-
-                // Create Link
-                var result_link = "?q=" + query +
-                    "&p=" + current_page;
+                // Range of results for current page
+                var page_begin = start + 1;
+                var page_end = ( (start + rows) < total_results) ? (start + rows) : total_results;
 
                 // Update results stats div
                 $('#searchStats').empty();
@@ -101,7 +82,7 @@ TODO:
                         doc.magazine + " >> <a href=\"" + doc.url + "\" target=\"story\">" +
                         doc.title + "</a></h3>" +
                         "<p class=\"font-75\">By " + doc.author.join(", ") + "<br />" +
-                        "Published " + published_date.toLocaleDateString('en-us', defaults.date_options) + "<br />" +
+                        "Published " + published_date.toLocaleDateString('en-us', bwconfig.date_options) + "<br />" +
                         "Search Relevance: " + doc.score +
                         "</p>" +
                         "<div class=\"accordion font-62\" id=\"det-" + res_counter + "\">"+
@@ -110,7 +91,7 @@ TODO:
                         '<thead><tr><td>Metric</td><td>Value</td></tr></thead>' +
                         '<tbody id="analysisTableBody-' + res_counter + '"></tbody>' +
                         '</table>' +
-                        '<h3>Top 5 Similar Stories</h3>' +
+                        '<h3>Top ' + data.moreLikeThis[doc.url].docs.length + ' Similar Stories</h3>' +
                         '<table class="scrollTable" id="mltTable">' +
                         '<thead><tr><td>Title</td><td>Author</td><td>Magazine</td><td>Published</td></tr></thead>'+
                         '<tbody id="mltTableBody-' + res_counter + '"></tbody>' +
@@ -149,16 +130,7 @@ TODO:
             function searchStories(query,start,rows,callback) {
                 // Wipe out prior results
                 $('#results').empty();
-                // Craft search parameters
-                var params = 'q=' + query +
-                    '&wt=json' +
-                    '&fl=magazine,title,url,id,author,pub_date,score,' + display_results.join() +
-                    '&mlt=true&mlt.fl=text' +
-                    '&mlt.count=' + mlt_count +
-                    '&rows=' + rows +
-                    '&start=' + start;
-                // Invoke Search
-                solrSearch(params, callback, displayAjaxError);
+                solrSearchText(query, start, rows, callback, displayAjaxError);
             }
 
             // Hook enter to search

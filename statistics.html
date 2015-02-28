@@ -48,14 +48,14 @@ bookwormjs: true
 
                 // Create selector control
                 magazine_selector = new google.visualization.ControlWrapper({
-                    'controlType': 'CategoryFilter',
-                    'containerId': 'magazine_selector',
-                    'options': {
-                        'filterColumnLabel': 'Magazine',
-                        'ui': {
-                            'allowTyping': false,
-                            'allowMultiple': false,
-                            'selectedValuesLayout': 'belowStacked'
+                    controlType: 'CategoryFilter',
+                    containerId: 'magazine_selector',
+                    options: {
+                        filterColumnLabel: 'Magazine',
+                        ui: {
+                            allowTyping: false,
+                            allowMultiple: false,
+                            selectedValuesLayout: 'belowStacked'
                         },
                     },
                 });

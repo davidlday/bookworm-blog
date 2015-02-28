@@ -9,24 +9,25 @@ bookwormjs: true
 <!--
 TODO:
 * Make tips into an accordion
-* Use labels from bookworm_labels in bookworm.js
-* Extract Similar Stories and Bookworm Analysis into bookworm.js for use in search as well.
 -->
 
 
         <p>Use this form to analyze a piece of writing with the same algorithms I use.</p>
-        <div id="hints" class="font-75">
+        <hr />
+        <div id="caveats" class="accordion font-75">
             <h3>Caveats</h3>
-            <ul>
-                <li>Nothing from this form is saved anywhere.</li>
-                <li>Plain text only.</li>
-                <li>Everything between double quotes (") is considered dialogue.</li>
-                <li>Section separators (e.g. #) are ignored.</li>
-                <li>Paragraphs are separated by one or more line breaks (return). Multiple consecutive line breaks are considered as one.</li>
-                <li>The formulae for the readability scores vary across implementations. Scores here may not exactly match scores from another tool.</li>
-            </ul>
+            <div>
+                <ul>
+                    <li>Nothing from this form is saved anywhere.</li>
+                    <li>Plain text only.</li>
+                    <li>Everything between double quotes (") is considered dialogue.</li>
+                    <li>Section separators (e.g. #) are ignored.</li>
+                    <li>Paragraphs are separated by one or more line breaks (return). Multiple consecutive line breaks are considered as one.</li>
+                    <li>The formulae for the readability scores vary across implementations. Scores here may not exactly match scores from another tool.</li>
+                </ul>
+            </div>
         </div>
-
+        <hr />
         <div id="story">
             <textarea id="storyText" class="storyText" placeholder="Paste story here..."></textarea>
             <button id="analyzeButton">Analyze</button>
@@ -61,29 +62,7 @@ TODO:
 
         <script>
             // Controls what return values are displayed in the table.
-            var display_results = defaults.display_results;
-//             [
-//                 'syllable_count',
-//                 'word_count',
-//                 'sentence_count',
-//                 'avg_syllables_per_word',
-//                 'avg_words_per_sentence',
-//                 'dialogue_syllable_count',
-//                 'dialogue_word_count',
-//                 'narrative_syllable_count',
-//                 'narrative_word_count',
-//                 'dialogue_syllable_percentage',
-//                 'dialogue_word_percentage',
-//                 'pov',
-//                 'coleman_liau_index',
-//                 'automated_readability_index',
-//                 'flesch_kincaid_grade_level',
-//                 'smog_index',
-//                 'flesch_reading_ease',
-//                 'gunning_fog_index',
-//                 'rix',
-//                 'lix',
-//             ];
+            var display_results = bwconfig.display_results;
 
             // Search button
             $('#analyzeButton').click( analyzeStory );
@@ -111,13 +90,11 @@ TODO:
             function displayAnalysis(data) {
                 // Populate analysis results
                 populateAnalysisTableBody('#analysisTableBody', display_results, data);
-                // Collapse all accordions.
-                $( "div.accordion" ).each( function() {
-                    $(this).accordion({
-                        active: 0,
-                        collapsible: true,
-                        animate: 50,
-                    });
+                // Collapse result accordions.
+                $( '#results' ).accordion({
+                    active: 0,
+                    collapsible: true,
+                    animate: 50,
                 });
                 // Show the results div
                 $('#results-message').hide();
@@ -135,7 +112,12 @@ TODO:
             }
 
             $( document ).ready( function() {
-
+                // Collapse the caveats
+//                 $( '#caveats' ).accordion({
+//                     active: null,
+//                     collapsible: true,
+//                     animate: 50,
+//                 });
             });
 
         </script>

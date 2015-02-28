@@ -2,10 +2,8 @@
 * Common Bookworm JavaScript
 */
 
-// URLs
-
 // Defaults
-var defaults = {
+var bwconfig = {
     // Date display options
     date_options: {
         year: "numeric",
@@ -39,6 +37,13 @@ var defaults = {
         // Analyzer script
         analyzer: 'http://bookworm.davidlday.com/public/scripts/analyze.py',
     },
+    // MoreLikeThis
+    mlt: {
+        fl: 'text',
+        minwl: 3,
+        maxqt: 50,
+        rows: 20,
+    },
     // Controls Google Charts Histograms
     histogram_settings: {
         legend:    {
@@ -56,15 +61,16 @@ var defaults = {
     },
 };
 
-// Functions
+// Solr Functions
 // General Search
 function solrSearch(params, successCallback, errorCallback) {
     $.ajax({type: "GET",
-        url: defaults.urls.search + '?' + params,
+        url: bwconfig.urls.search,
+        data: params,
         crossDomain: true,
         dataType: 'json',
-        success: function(result) {
-            successCallback(result)
+        success: function(data) {
+            successCallback(data)
         },
         error: function (xhr, ajaxOptions, thrownError) {
             errorCallback(thrownError);
@@ -72,21 +78,27 @@ function solrSearch(params, successCallback, errorCallback) {
     });
 }
 
-// General MoreLikeThis
-function solrMoreLikeThisText(text, successCallback, errorCallback) {
-    var post_data = {
-        'stream.body': text,
-        rows: 20,
-        'mlt.match.include': true,
-        fl: '*,score',
-        'mlt.interestingTerms': 'details',
-        'mlt.stopWordsFile': 'lang/stopwords_en.txt',
-        'mlt.minwl': 3,
+// Convenience Search
+function solrSearchText(txt, start, rows, successCallback, errorCallback) {
+    var params = {
+        q: txt,
+        wt: 'json',
+        fl: 'magazine,title,url,id,author,pub_date,score,' + display_results.join(),
+        mlt: true,
+        'mlt.fl': bwconfig.mlt.fl,
+        'mlt.count': bwconfig.mlt.rows,
+        rows: rows,
+        start: start,
     };
+    solrSearch(params, successCallback, errorCallback);
+}
+
+// General MoreLikeThis
+function solrMoreLikeThis(params, successCallback, errorCallback) {
     $.ajax({type: "POST",
-        url: defaults.urls.mlt,
+        url: bwconfig.urls.mlt,
         crossDomain: true,
-        data: post_data,
+        data: params,
         dataType: 'json',
         success: function(data) {
             successCallback(data.response.docs)
@@ -97,12 +109,27 @@ function solrMoreLikeThisText(text, successCallback, errorCallback) {
     });
 }
 
+// Convenience MoreLikeThis
+function solrMoreLikeThisText(txt, successCallback, errorCallback) {
+    var params = {
+        'stream.body': txt,
+        rows: bwconfig.mlt.rows,
+        'mlt.match.include': false,
+        fl: '*,score',
+        'mlt.interestingTerms': 'details',
+        'mlt.fl': bwconfig.mlt.fl,
+        'mlt.minwl': bwconfig.mlt.minwl,
+        'mlt.maxqt': bwconfig.mlt.maxqt,
+    };
+    solrMoreLikeThis(params, successCallback, errorCallback);
+}
+
 // Analyze Text using Bookworm Utility Script
 function analyzeText(txt, successCallback, errorCallback) {
     var post_data = {'text': txt};
     $.ajax({
         type: "POST",
-        url: defaults.urls.analyzer,
+        url: bwconfig.urls.analyzer,
         crossDomain: true,
         data: post_data,
         dataType: 'json',
@@ -124,7 +151,7 @@ function populateMltTableBody(mltTableBody, docs) {
             "<td><a href=\"" +doc.url + "\" target=\"story\">" + doc.title + "</a></td>" +
             "<td>" + doc.author.join() + "</td>" +
             "<td>" + doc.magazine + "</td>" +
-            "<td>" + published_date.toLocaleDateString('en-us', defaults.date_options) + "</td>" +
+            "<td>" + published_date.toLocaleDateString('en-us', bwconfig.date_options) + "</td>" +
             "</tr>"
         );
     });
@@ -261,10 +288,10 @@ var histogram_settings = {
 };
 
 // Merge Default Histogram Options into Specific Options
-for (var attr in defaults.histogram_settings) {
+for (var attr in bwconfig.histogram_settings) {
     for (var setting in histogram_settings) {
         if (!histogram_settings[setting][attr]) {
-            histogram_settings[setting][attr] = defaults.histogram_settings[attr];
+            histogram_settings[setting][attr] = bwconfig.histogram_settings[attr];
         }
     }
 }
