@@ -5,13 +5,6 @@ comments: false
 jquery: true
 bookwormjs: true
 ---
-
-<!--
-TODO:
-* Make tips into an accordion
--->
-
-
         <p>Use this form to analyze a piece of writing with the same algorithms I use.</p>
         <hr />
         <div id="caveats" class="accordion font-75">
@@ -45,6 +38,11 @@ TODO:
                 <tbody id="analysisTableBody">
                 </tbody>
             </table>
+            <hr />
+            <h3>Market Comparison</h3>
+            <div id="marketComparison">
+            </div>
+            <hr />
             <h3>Similar Stories</h3>
             <table class="scrollTable" id="mltTable">
                 <thead id="mltTableHead">
@@ -77,6 +75,7 @@ TODO:
                 // Wipe out prior results
                 $('#analysisTableBody').empty();
                 $('#mltTableBody').empty();
+                $('#marketComparison').empty();
 
                 // Make sure there's text and run analysis
                 var story = $('#storyText').val();
@@ -90,12 +89,39 @@ TODO:
             function displayAnalysis(data) {
                 // Populate analysis results
                 populateAnalysisTableBody('#analysisTableBody', display_results, data);
+
+                // Start of comparing work to market metrics
+                solrGetMagazines( function( magazines ) {
+                    $.each( magazines, function( index, magazine ) {
+                        var tblHead = '<table class="scrollTable" id="' +  magazine.name + '">' +
+                            '<thead><tr><td colspan="0" class="text-center">' +  magazine.name + '</td></tr></thead>' +
+                            '<tbody id="' + magazine.name + '-TableBody"></tbody>' +
+                            '</table>';
+                        $( '#marketComparison' ).append(
+                            tblHead
+                        );
+
+                        $.each(display_results, function(index, metric) {
+                            if (typeof histogram_settings[metric] !== 'undefined') {
+                                solrGetMagazineMetricBins(magazine.name,
+                                    metric,
+                                    histogram_settings[metric]['histogram']['bucketSize'],
+                                    function( bindata ) {
+                                        console.log(bindata)
+                                    },
+                                    displayAjaxError);
+                            }
+                        });
+                    });
+                }, displayAjaxError);
+
                 // Collapse result accordions.
-                $( '#results' ).accordion({
-                    active: 0,
-                    collapsible: true,
-                    animate: 50,
-                });
+//                 $( '#results' ).accordion({
+//                     active: 0,
+//                     collapsible: true,
+//                     animate: 50,
+//                 });
+
                 // Show the results div
                 $('#results-message').hide();
                 $('#results').show();

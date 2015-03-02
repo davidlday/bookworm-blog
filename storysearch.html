@@ -12,6 +12,12 @@ TODO:
 *
 -->
 
+        <style>
+ul.ui-autocomplete.ui-menu {
+    font-size: 75%;
+}
+        </style>
+
         <div id="search">
             <input id="searchText" type="text" style="width: 100%" placeholder="Search Stories..." />
         </div>
@@ -143,12 +149,58 @@ TODO:
 
             // Perform the search if ready
             $(document).ready(function () {
+                // Perform search if need
                 if (query != null && query != '') {
                     $('#searchText').val(query);
                     $('#searchStats').empty();
                     $('#searchStats').append("Searching...");
                     searchStories(query, start, rows, displayResults);
                 }
+
+                // Bind autocomplete to input
+                $('#searchText')
+                // don't navigate away from the field on tab when selecting an item
+                    .bind( "keydown", function( event ) {
+                        if ( event.keyCode === $.ui.keyCode.TAB &&
+                            $( this ).autocomplete( "instance" ).menu.active ) {
+                            event.preventDefault();
+                        }
+                    })
+                    .autocomplete({
+                        minLength: 3,
+                        source: function(request, response) {
+                            var search_text = request.term.replace('"', '')
+                            var all_terms = search_text.split( /\s+/ );
+                            var term = all_terms.pop();
+                            var params = {
+                                q: search_text + '*',
+                                'q.op': 'AND',
+                                facet: true,
+                                'facet.field': 'text',
+                                'facet.prefix': term,
+                                'facet.mincount': 1,
+                                wt: 'json',
+                                fl: 'title',
+                                rows: 0,
+                            }
+                            solrSearch(params, function( data ) {
+                                var terms = [];
+                                for (i = 0; i < data.facet_counts.facet_fields.text.length; i += 2) {
+                                    terms.push(all_terms.join(" ") + " " + data.facet_counts.facet_fields.text[i]);
+                                }
+                                response(terms);
+                            });
+                        },
+                        focus: function() {
+                            // prevent value inserted on focus
+                            return false;
+                        },
+                        select: function( event, ui ) {
+                            this.value = ui.item.value + " ";
+                            return false;
+                        },
+                    });
+
             });
 
         </script>

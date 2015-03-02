@@ -10,6 +10,145 @@ var bwconfig = {
         month: "long",
         day: "numeric"
     },
+    // Full list of metrics
+    metrics: {
+        automated_readability_index: {
+            label: "Readability: Automated Readability Index",
+            multivalue: false,
+            binsize: 0.5,
+        },
+        avg_syllables_per_word: {
+            label: "Avg. Syllables per Word",
+            multivalue: false,
+            binsize: 1.0,
+        },
+        avg_words_per_sentence: {
+            label: "Avg. Words per Sentence",
+            multivalue: false,
+            binsize: 1.0,
+        },
+        coleman_liau_index: {
+            label: "Readability: Coleman Liau Index",
+            multivalue: false,
+            binsize: 0.5,
+        },
+        dialogue_syllable_percentage: {
+            label: "Percent Dialogue (Syllables)",
+            multivalue: false,
+            binsize: 5.0,
+        },
+        dialogue_word_percentage: {
+            label: "Percent Dialogue (Words)",
+            multivalue: false,
+            binsize: 5.0,
+        },
+        dialogue_syllable_count: {
+            label: "Dialogue Syllable Count",
+            multivalue: false,
+            binsize: 500,
+        },
+        dialogue_unique_word_count: {
+            label: "Dialogue Unique Word Count",
+            multivalue: false,
+            binsize: 1.0,
+        },
+        dialogue_word_count: {
+            label: "Dialogue Word Count",
+            multivalue: false,
+            binsize: 500,
+        },
+        flesch_kincaid_grade_level: {
+            label: "Readability: Flesch Kincaid Grade Level",
+            multivalue: false,
+            binsize: 0.5,
+        },
+        flesch_reading_ease: {
+            label: "Readability: Flesch Reading Ease",
+            multivalue: false,
+            binsize: 0.5,
+        },
+        gunning_fog_index: {
+            label: "Readability: Gunning Fox Index",
+            multivalue: false,
+            binsize: 0.5,
+        },
+        lix: {
+            label: "Readability: LIX",
+            multivalue: false,
+            binsize: 0.5,
+        },
+        narrative_syllable_count: {
+            label: "Narrative Syllable Count",
+            multivalue: false,
+            binsize: 500,
+        },
+        narrative_word_count: {
+            label: "Narrative Word Count",
+            multivalue: false,
+            binsize: 500,
+        },
+        rix: {
+            label: "Readability: RIX",
+            multivalue: false,
+            binsize: 0.5,
+        },
+        sentence_count: {
+            label: "Sentence Count",
+            multivalue: false,
+            binsize: 10,
+        },
+        smog_index: {
+            label: "Readability: SMOG Index",
+            multivalue: false,
+            binsize: 0.5,
+        },
+        syllable_count: {
+            label: "Syllable Count",
+            multivalue: false,
+            binsize: 500,
+        },
+        unique_word_count: {
+            label: "Unique Word Count",
+            multivalue: false,
+            binsize: 1.0,
+        },
+        word_count: {
+            label: "Word Count",
+            multivalue: false,
+            binsize: 250,
+        },
+    },
+    // Full list of text fields
+    text_field: {
+        id: {
+            label: "ID",
+            multivalue: false,
+        },
+        url: {
+            label: "Story URL",
+            multivalue: false,
+        },
+        magazine: {
+            label: "Magazine",
+            multivalue: false,
+        },
+        author: {
+            label: "Author(s)",
+            multivalue: true,
+        },
+        genre: {
+            label: "Magazine Genre",
+            multivalue: true,
+        },
+        original_tags: {
+            label: "Tags",
+            multivalue: true,
+        },
+        pov: {
+            label: "Point of View",
+            multivalue: false,
+        },
+    },
     // Controls what metrics are displayed.
     display_results: [
         'syllable_count',
@@ -45,7 +184,7 @@ var bwconfig = {
         rows: 20,
     },
     // Controls Google Charts Histograms
-    histogram_settings: {
+    histogram_defaults: {
         legend:    {
             position: 'none'},
         enableInteractivity: true,
@@ -82,6 +221,7 @@ function solrSearch(params, successCallback, errorCallback) {
 function solrSearchText(txt, start, rows, successCallback, errorCallback) {
     var params = {
         q: txt,
+        'q.op': 'AND',
         wt: 'json',
         fl: 'magazine,title,url,id,author,pub_date,score,' + display_results.join(),
         mlt: true,
@@ -91,6 +231,64 @@ function solrSearchText(txt, start, rows, successCallback, errorCallback) {
         start: start,
     };
     solrSearch(params, successCallback, errorCallback);
+}
+
+// Convenience List of Magazines w/ number of total stories
+function solrGetMagazines(successCallback, errorCallback) {
+    var params = {
+        q: '*',
+        'q.op': 'AND',
+        wt: 'json',
+        fl: 'magazine',
+        sort: 'magazine asc',
+        group: true,
+        'group.field': 'magazine',
+    };
+    solrSearch(params, function( data ) {
+        var magazines = [];
+        $.each( data.grouped.magazine.groups, function(index, group) {
+            magazines.push(
+                {
+                    name: group.doclist.docs[0].magazine,
+                    totalStories: group.doclist.numFound,
+                }
+            );
+        });
+        successCallback( magazines );
+    },
+    errorCallback);
+}
+
+// Convenience Binned Data for Magazine / Metric
+function solrGetMagazineMetricBins(magazine, metric, binSize, successCallback, errorCallback) {
+    var bin_formula = 'product($binsize,floor(div(' + metric + ',$binsize)))';
+    var params = {
+        q: 'magazine:"' + magazine + '"',
+        wt: 'json',
+        fl: 'magazine',
+        bin: bin_formula,
+        'binsize': binSize,
+        sort: '$bin asc',
+        group: true,
+        'group.func': '$bin',
+        rows: 9999999,
+    };
+    solrSearch(params, function( data ) {
+        var results = { 'magazine': magazine,
+            'metric': metric,
+            bins: [],
+        }
+        $.each( data.grouped['$bin'].groups, function(index, group) {
+            results.bins.push(
+                {
+                    bin: group.groupValue,
+                    count: group.doclist.numFound,
+                }
+            );
+        });
+        successCallback( results );
+    },
+    errorCallback);
 }
 
 // General MoreLikeThis
@@ -142,6 +340,7 @@ function analyzeText(txt, successCallback, errorCallback) {
     });
 }
 
+// UI Functions
 // Add stories to mlt table body
 function populateMltTableBody(mltTableBody, docs) {
     $.each(docs, function(index, doc) {
@@ -170,14 +369,27 @@ function populateAnalysisTableBody(analysisTableBody, display_metrics, data) {
                 formatted_value = Number(value).toFixed(4);
             }
         }
+        console.log(metric);
         $(analysisTableBody).append(
             "<tr id=\"" + metric + "\">" +
-            "<td>" + bookworm_labels[metric] + "</td>" +
+            "<td>" + bwconfig.metrics[metric].label + "</td>" +
             "<td class=\"text-right\">" + formatted_value + "</td>" +
             "</tr>"
         );
     });
 }
+
+function getFieldLabel( field ) {
+    var label = '';
+    if (typeof bwconfig.metrics[field] !== 'undefined') {
+        label = bwconfig.metrics[field].label;
+    } else if (typeof bwconfig.text_fields[field] !== 'undefined') {
+        label = bwconfig.text_fields[field].label;
+    } else {
+        label = "unknown";
+    }
+    return label;
+ }
 
 // Cribbed from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
 function getParameterByName(name) {
@@ -188,110 +400,19 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-// Constants and Configs
-// Labels for Metrics
-var bookworm_labels = {
-    url: "Story URL",
-    magazine: "Magazine",
-    automated_readability_index: "Readability: Automated Readability Index",
-    avg_syllables_per_word: "Avg. Syllables per Word",
-    avg_words_per_sentence: "Avg. Words per Sentence",
-    coleman_liau_index: "Readability: Coleman Liau Index",
-    dialogue_syllable_percentage: "Percent Dialogue (Syllables)",
-    dialogue_word_percentage: "Percent Dialogue (Words)",
-    dialogue_syllable_count: "Dialogue Syllable Count",
-    dialogue_unique_word_count: "Dialogue Unique Word Count",
-    dialogue_word_count: "Dialogue Word Count",
-    flesch_kincaid_grade_level: "Readability: Flesch Kincaid Grade Level",
-    flesch_reading_ease: "Readability: Flesch Reading Ease",
-    gunning_fog_index: "Readability: Gunning Fox Index",
-    lix: "Readability: LIX",
-    narrative_syllable_count: "Narrative Syllable Count",
-    narrative_word_count: "Narrative Word Count",
-    rix: "Readability: RIX",
-    sentence_count: "Sentence Count",
-    smog_index: "Readability: SMOG Index",
-    syllable_count: "Syllable Count",
-    unique_word_count: "Unique Word Count",
-    word_count: "Word Count",
-    pov: "Point of View",
-};
-
-// Histogram Specific Options
-var histogram_settings = {
-    word_count: {
-        title: bookworm_labels.word_count,
-        histogram: {
-            bucketSize: 500
-        },
-    },
-    avg_words_per_sentence: {
-        title: bookworm_labels.avg_words_per_sentence,
-        histogram: {
-            bucketSize: 5
-        },
-    },
-    dialogue_word_percentage: {
-        title: bookworm_labels.dialogue_word_percentage,
-        histogram: {
-            bucketSize: 5
-        },
-    },
-    automated_readability_index: {
-        title: bookworm_labels.automated_readability_index,
-        histogram: {
-            bucketSize: 0.5
-        },
-    },
-    coleman_liau_index: {
-        title: bookworm_labels.coleman_liau_index,
-        histogram: {
-            bucketSize: 0.5
-        },
-    },
-    flesch_kincaid_grade_level: {
-        title: bookworm_labels.flesch_kincaid_grade_level,
-        histogram: {
-            bucketSize: 0.5
-        },
-    },
-    flesch_reading_ease: {
-        title: bookworm_labels.flesch_reading_ease,
-        histogram: {
-            bucketSize: 0.5
-        },
-    },
-    gunning_fog_index: {
-        title: bookworm_labels.gunning_fog_index,
-        histogram: {
-            bucketSize: 1.0
-        },
-    },
-    lix: {
-        title: bookworm_labels.lix,
-        histogram: {
-            bucketSize: 0.5
-        },
-    },
-    rix: {
-        title: bookworm_labels.rix,
-        histogram: {
-            bucketSize: 0.5
-        },
-    },
-    smog_index: {
-        title: bookworm_labels.smog_index,
-        histogram: {
-            bucketSize: 0.5
-        },
-    },
-};
 
 // Merge Default Histogram Options into Specific Options
-for (var attr in bwconfig.histogram_settings) {
-    for (var setting in histogram_settings) {
-        if (!histogram_settings[setting][attr]) {
-            histogram_settings[setting][attr] = bwconfig.histogram_settings[attr];
+var histogram_settings = {};
+for (var metric in bwconfig.metrics) {
+    histogram_settings[metric] = {
+        title: metric.label,
+        histogram: {
+            bucketSize: metric.binsize,
+        },
+    };
+    for (var attr in bwconfig.histogram_defaults) {
+        if (!histogram_settings[metric][attr]) {
+            histogram_settings[metric][attr] = bwconfig.histogram_defaults[attr];
         }
     }
 }
