@@ -19,6 +19,8 @@ Articles:
 * [WSJ: Automatons Get Creative](http://online.wsj.com/news/articles/SB10000872396390444375104577591304277229534?mg=reno64-wsj&url=http%3A%2F%2Fonline.wsj.com%2Farticle%2FSB10000872396390444375104577591304277229534.html)
 * [The Telegraph: Scientists find secret to writing a best-selling novel](http://www.telegraph.co.uk/technology/news/10560533/Scientists-find-secret-to-writing-a-best-selling-novel.html)
 * [Are Review Scores Worthless?](http://www.gamesindustry.biz/articles/2015-02-10-are-review-scores-pointless) - In the context of video game reviews.
+* [TEDEd: Did Shakespeare write his plays?](http://ed.ted.com/lessons/did-shakespeare-write-his-plays-natalya-st-clair-and-aaron-williams)
+* [Stylometry and pastiche. A case study from French crime fiction](http://dragonfly.hypotheses.org/745)
 
 Reference Material:
 
