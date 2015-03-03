@@ -19,6 +19,7 @@ bookwormjs: true
             google.load('visualization', '1.0', {'packages':['corechart', 'controls']});
             google.setOnLoadCallback(initDashboard);
 
+            var display_results = bwconfig.display_results;
             var magazines = [];
             var magazine_datatable;
             var magazine_selector;
@@ -72,24 +73,24 @@ bookwormjs: true
                 magazine_dashboard = new google.visualization.Dashboard(document.getElementById('magazine_dashboard'));
 
                 //Create initial charts
-                var index = 2; // Offset to account for Magazine and Story URL columns
+                var column_index = 2; // Offset to account for Magazine and Story URL columns
                 var div_width = $('#magazine_dashboard').parent().width()
                 var div_height = (div_width * 2) / 3;
-                $.each( histogram_settings, function( metric ) {
+                $.each( display_results, function( metric_index, metric ) {
                     var chart = new google.visualization.ChartWrapper({
                         'chartType': 'Histogram',
                         'containerId': 'histogram_' + metric,
                         'options': histogram_settings[metric],
                         'view': {
-                            'columns': [1, index]
+                            'columns': [1, column_index]
                         },
                     });
                     charts.push(chart);
                     // Add div for the chart
                     $('#magazine_dashboard').append("<div id=\"histogram_" + metric +
-                        "\" style=\"width: " + div_width + "px; height: " + div_width +
+                        "\" style=\"width: " + div_width + "px; height: " + div_height +
                         "px;\"></div><hr />");
-                    index++;
+                    column_index++;
                 });
 
                 // Bind charts to selector
