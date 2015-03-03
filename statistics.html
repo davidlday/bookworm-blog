@@ -3,41 +3,74 @@ layout: page
 title: Statistics
 comments: false
 jquery: true
-googlecharts: true
+flot: true
 bookwormjs: true
 ---
+
+        <style>
+        table {
+            width: auto;
+        }
+        </style>
+
         <div id="loading_message" style="width: 100%;">
         Loading data...
         </div>
+        <div id="legend"></div>
         <div id="magazine_dashboard" style="width: 100%; display: none;">
-            <div id="magazine_selector" style="padding-bottom: 2em"></div>
+            <div id="magazine_selector" class="font-62"></div>
             <hr />
         </div>
 
         <script>
-            // Load the Visualization API and the piechart package.
-            google.load('visualization', '1.0', {'packages':['corechart', 'controls']});
-            google.setOnLoadCallback(initDashboard);
 
             var display_results = bwconfig.display_results;
+            //var display_results = ['pov'];
             var magazines = [];
             var magazine_datatable;
             var magazine_selector;
             var magazine_dashboard;
-            var charts = [];
 
-            function loadDataAndDraw(data) {
-                // Populate magazine_datatable
-                data.response.docs.forEach( function( doc ) {
-                    var data_row = [doc.magazine, doc.url];
-                    $.each( histogram_settings, function( metric ) {
-                        data_row.push(doc[metric]);
-                    });
-                    magazine_datatable.addRow(data_row);
+            var chart_data = {};
+            var charts = {};
+            var options = {
+                series: {
+                    stack: true,
+                    lines: {
+                        show: false,
+                        fill: true,
+                        steps: false,
+                    },
+                    bars: {
+                        align: 'center',
+                        show: true,
+                        barWidth: 0.25,
+                        lineWidth: 0,
+                        fill: 0.9,
+                    },
+                },
+//                 legend: {
+//                     container: $('#legend'),
+//                 },
+            };
+
+            function loadDataAndDraw( binneddata ) {
+                // Add result to data;
+                var new_data = [];
+                $.each( binneddata.bins, function(index, data) {
+                    new_data.push( [data.bin, data.count] );
+                });
+                chart_data[binneddata.metric].push( {
+                    label: binneddata.magazine,
+                    hoverable: true,
+                    clickable: true,
+                    data: new_data,
                 });
 
-                // Draw the dashboard
-                magazine_dashboard.draw(magazine_datatable);
+                options.series.bars.barWidth = binneddata.binsize * 0.8;
+                options['xaxis'] = binneddata.xaxis;
+
+                $.plot('#histogram_' + binneddata.metric, chart_data[binneddata.metric], options);
 
                 // Now show the whole thing
                 $('#loading_message').hide();
@@ -45,64 +78,33 @@ bookwormjs: true
 
             }
 
-            function initDashboard(data) {
-
-                // Create selector control
-                magazine_selector = new google.visualization.ControlWrapper({
-                    controlType: 'CategoryFilter',
-                    containerId: 'magazine_selector',
-                    options: {
-                        filterColumnLabel: 'Magazine',
-                        ui: {
-                            allowTyping: false,
-                            allowMultiple: false,
-                            selectedValuesLayout: 'belowStacked'
-                        },
-                    },
-                });
-
-                // Define DataTable
-                magazine_datatable = new google.visualization.DataTable();
-                magazine_datatable.addColumn('string', 'Magazine');
-                magazine_datatable.addColumn('string', 'Story URL');
-                $.each( histogram_settings, function( metric) {
-                    magazine_datatable.addColumn('number', histogram_settings[metric].title);
-                });
-
-                // Create a dashboard.
-                magazine_dashboard = new google.visualization.Dashboard(document.getElementById('magazine_dashboard'));
-
+            $(document).ready( function() {
                 //Create initial charts
-                var column_index = 2; // Offset to account for Magazine and Story URL columns
                 var div_width = $('#magazine_dashboard').parent().width()
                 var div_height = (div_width * 2) / 3;
                 $.each( display_results, function( metric_index, metric ) {
-                    var chart = new google.visualization.ChartWrapper({
-                        'chartType': 'Histogram',
-                        'containerId': 'histogram_' + metric,
-                        'options': histogram_settings[metric],
-                        'view': {
-                            'columns': [1, column_index]
-                        },
-                    });
-                    charts.push(chart);
+                    // Initialize data sets
+                    chart_data[metric] = [];
                     // Add div for the chart
-                    $('#magazine_dashboard').append("<div id=\"histogram_" + metric +
+                    $('#magazine_dashboard').append("<h2>" + getFieldLabel(metric) + "</h2>" +
+                        "<div id=\"histogram_" + metric +
                         "\" style=\"width: " + div_width + "px; height: " + div_height +
-                        "px;\"></div><hr />");
-                    column_index++;
+                        "px;\"></div>" +
+                        "<div id=\"histogram_" + metric + "_legend\"></div>" +
+                        "<hr />");
+
+
+                    solrGetMagazines( function( magazines ) {
+                        $.each( magazines, function( index, magazine ) {
+                            solrGetBinnedMetric(magazine.name,
+                                metric,
+                                function( binneddata ) {
+                                    loadDataAndDraw( binneddata );
+                                },
+                                logAjaxError);
+                        });
+                    }, logAjaxError);
                 });
 
-                // Bind charts to selector
-                magazine_dashboard.bind(magazine_selector, charts);
-
-                $(document).ready( function() {
-                    var f = ['url','magazine'];
-                    $.each( histogram_settings, function( metric ) {
-                        f.push(metric);
-                    });
-                    var params = 'q=*&wt=json&fl=' + f.join() + ',score&rows=999999999';
-                    solrSearch(params, loadDataAndDraw);
-                });
-            };
+            });
         </script>

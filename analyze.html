@@ -91,29 +91,28 @@ bookwormjs: true
                 populateAnalysisTableBody('#analysisTableBody', display_results, data);
 
                 // Start of comparing work to market metrics
-                solrGetMagazines( function( magazines ) {
-                    $.each( magazines, function( index, magazine ) {
-                        var tblHead = '<table class="scrollTable" id="' +  magazine.name + '">' +
-                            '<thead><tr><td colspan="0" class="text-center">' +  magazine.name + '</td></tr></thead>' +
-                            '<tbody id="' + magazine.name + '-TableBody"></tbody>' +
-                            '</table>';
-                        $( '#marketComparison' ).append(
-                            tblHead
-                        );
-
-                        $.each(display_results, function(index, metric) {
-                            if (typeof histogram_settings[metric] !== 'undefined') {
-                                solrGetMagazineMetricBins(magazine.name,
-                                    metric,
-                                    histogram_settings[metric]['histogram']['bucketSize'],
-                                    function( bindata ) {
-                                        console.log(bindata)
-                                    },
-                                    displayAjaxError);
-                            }
-                        });
-                    });
-                }, displayAjaxError);
+//                 solrGetMagazines( function( magazines ) {
+//                     $.each( magazines, function( index, magazine ) {
+//                         var tblHead = '<table class="scrollTable" id="' +  magazine.name + '">' +
+//                             '<thead><tr><td colspan="0" class="text-center">' +  magazine.name + '</td></tr></thead>' +
+//                             '<tbody id="' + magazine.name + '-TableBody"></tbody>' +
+//                             '</table>';
+//                         $( '#marketComparison' ).append(
+//                             tblHead
+//                         );
+//
+//                         $.each(display_results, function(index, metric) {
+//                             if (typeof histogram_settings[metric] !== 'undefined') {
+//                                 solrGetBinnedMetric(magazine.name,
+//                                     metric,
+//                                     function( bindata ) {
+//
+//                                     },
+//                                     displayAjaxError);
+//                             }
+//                         });
+//                     });
+//                 }, displayAjaxError);
 
                 // Collapse result accordions.
 //                 $( '#results' ).accordion({

@@ -20,7 +20,7 @@ var bwconfig = {
         avg_syllables_per_word: {
             label: "Avg. Syllables per Word",
             multivalue: false,
-            binsize: 1.0,
+            binsize: 0.1,
         },
         avg_words_per_sentence: {
             label: "Avg. Words per Sentence",
@@ -119,34 +119,162 @@ var bwconfig = {
         },
     },
     // Full list of text fields
-    text_field: {
-        id: {
-            label: "ID",
-            multivalue: false,
-        },
+    fields: {
         url: {
             label: "Story URL",
             multivalue: false,
+            datatype: 'text',
         },
         magazine: {
             label: "Magazine",
             multivalue: false,
+            datatype: 'text',
         },
         author: {
             label: "Author(s)",
             multivalue: true,
+            datatype: 'text',
         },
         genre: {
             label: "Magazine Genre",
             multivalue: true,
+            datatype: 'text',
         },
         original_tags: {
-            label: "Tags",
+            label: "Story Tags",
             multivalue: true,
+            datatype: 'text',
         },
         pov: {
             label: "Point of View",
             multivalue: false,
+            datatype: 'text',
+        },
+        automated_readability_index: {
+            label: "Readability: Automated Readability Index",
+            multivalue: false,
+            binsize: 0.5,
+            datatype: 'numeric',
+        },
+        avg_syllables_per_word: {
+            label: "Avg. Syllables per Word",
+            multivalue: false,
+            binsize: 0.1,
+            datatype: 'numeric',
+        },
+        avg_words_per_sentence: {
+            label: "Avg. Words per Sentence",
+            multivalue: false,
+            binsize: 1.0,
+            datatype: 'numeric',
+        },
+        coleman_liau_index: {
+            label: "Readability: Coleman Liau Index",
+            multivalue: false,
+            binsize: 0.5,
+            datatype: 'numeric',
+        },
+        dialogue_syllable_percentage: {
+            label: "Percent Dialogue (Syllables)",
+            multivalue: false,
+            binsize: 5.0,
+            type: 'numeric',
+        },
+        dialogue_word_percentage: {
+            label: "Percent Dialogue (Words)",
+            multivalue: false,
+            binsize: 5.0,
+            datatype: 'numeric',
+        },
+        dialogue_syllable_count: {
+            label: "Dialogue Syllable Count",
+            multivalue: false,
+            binsize: 500,
+            datatype: 'numeric',
+        },
+        dialogue_unique_word_count: {
+            label: "Dialogue Unique Word Count",
+            multivalue: false,
+            binsize: 1.0,
+            datatype: 'numeric',
+        },
+        dialogue_word_count: {
+            label: "Dialogue Word Count",
+            multivalue: false,
+            binsize: 500,
+            datatype: 'numeric',
+        },
+        flesch_kincaid_grade_level: {
+            label: "Readability: Flesch Kincaid Grade Level",
+            multivalue: false,
+            binsize: 0.5,
+            datatype: 'numeric',
+        },
+        flesch_reading_ease: {
+            label: "Readability: Flesch Reading Ease",
+            multivalue: false,
+            binsize: 0.5,
+            datatype: 'numeric',
+        },
+        gunning_fog_index: {
+            label: "Readability: Gunning Fox Index",
+            multivalue: false,
+            binsize: 0.5,
+            datatype: 'numeric',
+        },
+        lix: {
+            label: "Readability: LIX",
+            multivalue: false,
+            binsize: 0.5,
+            datatype: 'numeric',
+        },
+        narrative_syllable_count: {
+            label: "Narrative Syllable Count",
+            multivalue: false,
+            binsize: 500,
+            datatype: 'numeric',
+        },
+        narrative_word_count: {
+            label: "Narrative Word Count",
+            multivalue: false,
+            binsize: 500,
+            datatype: 'numeric',
+        },
+        rix: {
+            label: "Readability: RIX",
+            multivalue: false,
+            binsize: 0.5,
+            datatype: 'numeric',
+        },
+        sentence_count: {
+            label: "Sentence Count",
+            multivalue: false,
+            binsize: 10,
+            datatype: 'numeric',
+        },
+        smog_index: {
+            label: "Readability: SMOG Index",
+            multivalue: false,
+            binsize: 0.5,
+            datatype: 'numeric',
+        },
+        syllable_count: {
+            label: "Syllable Count",
+            multivalue: false,
+            binsize: 500,
+            datatype: 'numeric',
+        },
+        unique_word_count: {
+            label: "Unique Word Count",
+            multivalue: false,
+            binsize: 1.0,
+            datatype: 'numeric',
+        },
+        word_count: {
+            label: "Word Count",
+            multivalue: false,
+            binsize: 250,
+            datatype: 'numeric',
         },
     },
     // Controls what metrics are displayed.
@@ -183,14 +311,22 @@ var bwconfig = {
         maxqt: 50,
         rows: 20,
     },
+    // Defaults for Google Charts Bar
+    bar_options: {
+
+    },
     // Controls Google Charts Histograms
     histogram_defaults: {
         legend:    {
-            position: 'none'},
+            position: 'none'
+        },
         enableInteractivity: true,
         chartArea: {
             width: '80%',
             height: '80%',
+        },
+        histogram: {
+            bucketSize: 1,
         },
         vAxis: {
             gridlines: {
@@ -260,35 +396,76 @@ function solrGetMagazines(successCallback, errorCallback) {
 }
 
 // Convenience Binned Data for Magazine / Metric
-function solrGetMagazineMetricBins(magazine, metric, binSize, successCallback, errorCallback) {
-    var bin_formula = 'product($binsize,floor(div(' + metric + ',$binsize)))';
-    var params = {
-        q: 'magazine:"' + magazine + '"',
-        wt: 'json',
-        fl: 'magazine',
-        bin: bin_formula,
-        'binsize': binSize,
-        sort: '$bin asc',
-        group: true,
-        'group.func': '$bin',
-        rows: 9999999,
-    };
-    solrSearch(params, function( data ) {
-        var results = { 'magazine': magazine,
-            'metric': metric,
-            bins: [],
-        }
-        $.each( data.grouped['$bin'].groups, function(index, group) {
-            results.bins.push(
-                {
-                    bin: group.groupValue,
-                    count: group.doclist.numFound,
+function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
+    if (bwconfig.fields[metric].datatype == 'numeric') {
+        var bin_formula = 'product($binsize,floor(div(' + metric + ',$binsize)))';
+        var params = {
+            q: 'magazine:"' + magazine + '"',
+            wt: 'json',
+            fl: 'magazine',
+            bin: bin_formula,
+            'binsize': bwconfig.metrics[metric].binsize,
+            sort: '$bin asc',
+            group: true,
+            'group.func': '$bin',
+            rows: 9999999,
+        };
+        solrSearch(params, function( data ) {
+            var results = { 'magazine': magazine,
+                'metric': metric,
+                'binsize': bwconfig.metrics[metric].binsize,
+                bins: [],
+            }
+            $.each( data.grouped['$bin'].groups, function(index, group) {
+                results.bins.push(
+                    {
+                        bin: group.groupValue,
+                        count: group.doclist.numFound,
+                    }
+                );
+            });
+            successCallback( results );
+        },
+        errorCallback);
+    } else {
+        var params = {
+            q: 'magazine:"' + magazine + '"',
+            wt: 'json',
+            fl: metric,
+            group: true,
+            'group.field': metric,
+            rows: 9999999,
+            sort: metric + ' asc',
+        };
+        solrSearch(params, function( data ) {
+            var groups = [];
+            var results = { 'magazine': magazine,
+                'metric': metric,
+                'binsize': 1,
+                bins: [],
+                xaxis: {
+                    ticks: [],
                 }
-            );
-        });
-        successCallback( results );
-    },
-    errorCallback);
+            }
+            $.each( data.grouped[metric].groups, function(index, group) {
+                var mappedBin = $.inArray(group.groupValue, groups);
+                if (mappedBin == -1){
+                    groups.push(group.groupValue);
+                    mappedBin = $.inArray(group.groupValue, groups);
+                    results.xaxis.ticks.push([mappedBin, group.groupValue]);
+                }
+                results.bins.push(
+                    {
+                        bin: mappedBin,
+                        count: group.doclist.numFound,
+                    }
+                );
+            });
+            console.log(results);
+            successCallback( results );
+        },
+        errorCallback);
+    }
 }
 
 // General MoreLikeThis
@@ -340,6 +517,17 @@ function analyzeText(txt, successCallback, errorCallback) {
     });
 }
 
+// Charting Functions
+// Get the options object for a chart
+function getGoogleChartOption( metric ) {
+    var options = {
+        chart: {
+            title: getFieldLabel( metric ),
+        },
+    };
+    return options;
+}
+
 // UI Functions
 // Add stories to mlt table body
 function populateMltTableBody(mltTableBody, docs) {
@@ -369,27 +557,28 @@ function populateAnalysisTableBody(analysisTableBody, display_metrics, data) {
                 formatted_value = Number(value).toFixed(4);
             }
         }
-        console.log(metric);
         $(analysisTableBody).append(
             "<tr id=\"" + metric + "\">" +
-            "<td>" + bwconfig.metrics[metric].label + "</td>" +
+            "<td>" + getFieldLabel(metric) + "</td>" +
             "<td class=\"text-right\">" + formatted_value + "</td>" +
             "</tr>"
         );
     });
 }
 
+// Return the text label for a bookworm field
 function getFieldLabel( field ) {
-    var label = '';
-    if (typeof bwconfig.metrics[field] !== 'undefined') {
-        label = bwconfig.metrics[field].label;
-    } else if (typeof bwconfig.text_fields[field] !== 'undefined') {
-        label = bwconfig.text_fields[field].label;
-    } else {
-        label = "unknown";
-    }
-    return label;
- }
+//     var label = '';
+//     if (typeof bwconfig.metrics[field] !== 'undefined') {
+//         label = bwconfig.metrics[field].label;
+//     } else if (typeof bwconfig.text_fields[field] !== 'undefined') {
+//         label = bwconfig.text_fields[field].label;
+//     } else {
+//         label = "unknown";
+//     }
+//     return label;
+    return bwconfig.fields[field].label;
+}
 
 // Cribbed from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
 function getParameterByName(name) {
@@ -404,15 +593,12 @@ function getParameterByName(name) {
 // Merge Default Histogram Options into Specific Options
 var histogram_settings = {};
 for (var metric in bwconfig.metrics) {
-    histogram_settings[metric] = {
-        title: metric.label,
-        histogram: {
-            bucketSize: metric.binsize,
-        },
-    };
-    for (var attr in bwconfig.histogram_defaults) {
-        if (!histogram_settings[metric][attr]) {
-            histogram_settings[metric][attr] = bwconfig.histogram_defaults[attr];
-        }
-    }
+    // Merge recursively using jQuery extend
+    histogram_settings[metric] = $.extend( true, {}, bwconfig.histogram_defaults, bwconfig.metrics[metric] );
+    histogram_settings[metric].title = histogram_settings[metric].label;
+    histogram_settings[metric]['histogram']['bucketSize'] = histogram_settings[metric].binsize;
+}
+
+function logAjaxError( message ) {
+    console.log(message);
 }
