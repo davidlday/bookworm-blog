@@ -11,114 +11,114 @@ var bwconfig = {
         day: "numeric"
     },
     // Full list of metrics
-    metrics: {
-        automated_readability_index: {
-            label: "Readability: Automated Readability Index",
-            multivalue: false,
-            binsize: 0.5,
-        },
-        avg_syllables_per_word: {
-            label: "Avg. Syllables per Word",
-            multivalue: false,
-            binsize: 0.1,
-        },
-        avg_words_per_sentence: {
-            label: "Avg. Words per Sentence",
-            multivalue: false,
-            binsize: 1.0,
-        },
-        coleman_liau_index: {
-            label: "Readability: Coleman Liau Index",
-            multivalue: false,
-            binsize: 0.5,
-        },
-        dialogue_syllable_percentage: {
-            label: "Percent Dialogue (Syllables)",
-            multivalue: false,
-            binsize: 5.0,
-        },
-        dialogue_word_percentage: {
-            label: "Percent Dialogue (Words)",
-            multivalue: false,
-            binsize: 5.0,
-        },
-        dialogue_syllable_count: {
-            label: "Dialogue Syllable Count",
-            multivalue: false,
-            binsize: 500,
-        },
-        dialogue_unique_word_count: {
-            label: "Dialogue Unique Word Count",
-            multivalue: false,
-            binsize: 1.0,
-        },
-        dialogue_word_count: {
-            label: "Dialogue Word Count",
-            multivalue: false,
-            binsize: 500,
-        },
-        flesch_kincaid_grade_level: {
-            label: "Readability: Flesch Kincaid Grade Level",
-            multivalue: false,
-            binsize: 0.5,
-        },
-        flesch_reading_ease: {
-            label: "Readability: Flesch Reading Ease",
-            multivalue: false,
-            binsize: 0.5,
-        },
-        gunning_fog_index: {
-            label: "Readability: Gunning Fox Index",
-            multivalue: false,
-            binsize: 0.5,
-        },
-        lix: {
-            label: "Readability: LIX",
-            multivalue: false,
-            binsize: 0.5,
-        },
-        narrative_syllable_count: {
-            label: "Narrative Syllable Count",
-            multivalue: false,
-            binsize: 500,
-        },
-        narrative_word_count: {
-            label: "Narrative Word Count",
-            multivalue: false,
-            binsize: 500,
-        },
-        rix: {
-            label: "Readability: RIX",
-            multivalue: false,
-            binsize: 0.5,
-        },
-        sentence_count: {
-            label: "Sentence Count",
-            multivalue: false,
-            binsize: 10,
-        },
-        smog_index: {
-            label: "Readability: SMOG Index",
-            multivalue: false,
-            binsize: 0.5,
-        },
-        syllable_count: {
-            label: "Syllable Count",
-            multivalue: false,
-            binsize: 500,
-        },
-        unique_word_count: {
-            label: "Unique Word Count",
-            multivalue: false,
-            binsize: 1.0,
-        },
-        word_count: {
-            label: "Word Count",
-            multivalue: false,
-            binsize: 250,
-        },
-    },
-    // Full list of text fields
+//     metrics: {
+//         automated_readability_index: {
+//             label: "Readability: Automated Readability Index",
+//             multivalue: false,
+//             binsize: 0.5,
+//         },
+//         avg_syllables_per_word: {
+//             label: "Avg. Syllables per Word",
+//             multivalue: false,
+//             binsize: 0.1,
+//         },
+//         avg_words_per_sentence: {
+//             label: "Avg. Words per Sentence",
+//             multivalue: false,
+//             binsize: 1.0,
+//         },
+//         coleman_liau_index: {
+//             label: "Readability: Coleman Liau Index",
+//             multivalue: false,
+//             binsize: 0.5,
+//         },
+//         dialogue_syllable_percentage: {
+//             label: "Percent Dialogue (Syllables)",
+//             multivalue: false,
+//             binsize: 5.0,
+//         },
+//         dialogue_word_percentage: {
+//             label: "Percent Dialogue (Words)",
+//             multivalue: false,
+//             binsize: 5.0,
+//         },
+//         dialogue_syllable_count: {
+//             label: "Dialogue Syllable Count",
+//             multivalue: false,
+//             binsize: 500,
+//         },
+//         dialogue_unique_word_count: {
+//             label: "Dialogue Unique Word Count",
+//             multivalue: false,
+//             binsize: 1.0,
+//         },
+//         dialogue_word_count: {
+//             label: "Dialogue Word Count",
+//             multivalue: false,
+//             binsize: 500,
+//         },
+//         flesch_kincaid_grade_level: {
+//             label: "Readability: Flesch Kincaid Grade Level",
+//             multivalue: false,
+//             binsize: 0.5,
+//         },
+//         flesch_reading_ease: {
+//             label: "Readability: Flesch Reading Ease",
+//             multivalue: false,
+//             binsize: 0.5,
+//         },
+//         gunning_fog_index: {
+//             label: "Readability: Gunning Fox Index",
+//             multivalue: false,
+//             binsize: 0.5,
+//         },
+//         lix: {
+//             label: "Readability: LIX",
+//             multivalue: false,
+//             binsize: 0.5,
+//         },
+//         narrative_syllable_count: {
+//             label: "Narrative Syllable Count",
+//             multivalue: false,
+//             binsize: 500,
+//         },
+//         narrative_word_count: {
+//             label: "Narrative Word Count",
+//             multivalue: false,
+//             binsize: 500,
+//         },
+//         rix: {
+//             label: "Readability: RIX",
+//             multivalue: false,
+//             binsize: 0.5,
+//         },
+//         sentence_count: {
+//             label: "Sentence Count",
+//             multivalue: false,
+//             binsize: 10,
+//         },
+//         smog_index: {
+//             label: "Readability: SMOG Index",
+//             multivalue: false,
+//             binsize: 0.5,
+//         },
+//         syllable_count: {
+//             label: "Syllable Count",
+//             multivalue: false,
+//             binsize: 500,
+//         },
+//         unique_word_count: {
+//             label: "Unique Word Count",
+//             multivalue: false,
+//             binsize: 1.0,
+//         },
+//         word_count: {
+//             label: "Word Count",
+//             multivalue: false,
+//             binsize: 250,
+//         },
+//     },
+    // Field Definitions
     fields: {
         url: {
             label: "Story URL",
@@ -397,6 +397,7 @@ function solrGetMagazines(successCallback, errorCallback) {
 
 // Convenience Binned Data for Magazine / Metric
 function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
+    // Test if we're grouping on numbers or text fields
     if (bwconfig.fields[metric].datatype == 'numeric') {
         var bin_formula = 'product($binsize,floor(div(' + metric + ',$binsize)))';
         var params = {
@@ -404,7 +405,7 @@ function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
             wt: 'json',
             fl: 'magazine',
             bin: bin_formula,
-            'binsize': bwconfig.metrics[metric].binsize,
+            binsize: bwconfig.fields[metric].binsize,
             sort: '$bin asc',
             group: true,
             'group.func': '$bin',
@@ -413,7 +414,7 @@ function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
         solrSearch(params, function( data ) {
             var results = { 'magazine': magazine,
                 'metric': metric,
-                'binsize': bwconfig.metrics[metric].binsize,
+                'binsize': bwconfig.fields[metric].binsize,
                 bins: [],
             }
             $.each( data.grouped['$bin'].groups, function(index, group) {
@@ -439,29 +440,23 @@ function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
         };
         solrSearch(params, function( data ) {
             var groups = [];
-            var results = { 'magazine': magazine,
-                'metric': metric,
-                'binsize': 1,
+            var results = {
+                magazine: magazine,
+                metric: metric,
+                binsize: 1,
                 bins: [],
                 xaxis: {
-                    ticks: [],
+                    mode: 'categories',
                 }
             }
             $.each( data.grouped[metric].groups, function(index, group) {
-                var mappedBin = $.inArray(group.groupValue, groups);
-                if (mappedBin == -1){
-                    groups.push(group.groupValue);
-                    mappedBin = $.inArray(group.groupValue, groups);
-                    results.xaxis.ticks.push([mappedBin, group.groupValue]);
-                }
                 results.bins.push(
                     {
-                        bin: mappedBin,
+                        bin: group.groupValue,
                         count: group.doclist.numFound,
                     }
                 );
             });
-            console.log(results);
             successCallback( results );
         },
         errorCallback);
@@ -517,17 +512,6 @@ function analyzeText(txt, successCallback, errorCallback) {
     });
 }
 
-// Charting Functions
-// Get the options object for a chart
-function getGoogleChartOption( metric ) {
-    var options = {
-        chart: {
-            title: getFieldLabel( metric ),
-        },
-    };
-    return options;
-}
-
 // UI Functions
 // Add stories to mlt table body
 function populateMltTableBody(mltTableBody, docs) {
@@ -536,7 +520,7 @@ function populateMltTableBody(mltTableBody, docs) {
         $(mltTableBody).append(
             "<tr id=\"mlt-" + index + "\">" +
             "<td><a href=\"" +doc.url + "\" target=\"story\">" + doc.title + "</a></td>" +
-            "<td>" + doc.author.join() + "</td>" +
+            "<td>" + doc.author.join(', ') + "</td>" +
             "<td>" + doc.magazine + "</td>" +
             "<td>" + published_date.toLocaleDateString('en-us', bwconfig.date_options) + "</td>" +
             "</tr>"
@@ -568,16 +552,12 @@ function populateAnalysisTableBody(analysisTableBody, display_metrics, data) {
 
 // Return the text label for a bookworm field
 function getFieldLabel( field ) {
-//     var label = '';
-//     if (typeof bwconfig.metrics[field] !== 'undefined') {
-//         label = bwconfig.metrics[field].label;
-//     } else if (typeof bwconfig.text_fields[field] !== 'undefined') {
-//         label = bwconfig.text_fields[field].label;
-//     } else {
-//         label = "unknown";
-//     }
-//     return label;
     return bwconfig.fields[field].label;
+}
+
+// Check if something is defined
+function isDefined( variable ) {
+    return ( typeof variable != 'undefined' );
 }
 
 // Cribbed from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
@@ -592,9 +572,9 @@ function getParameterByName(name) {
 
 // Merge Default Histogram Options into Specific Options
 var histogram_settings = {};
-for (var metric in bwconfig.metrics) {
+for (var metric in bwconfig.fields) {
     // Merge recursively using jQuery extend
-    histogram_settings[metric] = $.extend( true, {}, bwconfig.histogram_defaults, bwconfig.metrics[metric] );
+    histogram_settings[metric] = $.extend( true, {}, bwconfig.histogram_defaults, bwconfig.fields[metric] );
     histogram_settings[metric].title = histogram_settings[metric].label;
     histogram_settings[metric]['histogram']['bucketSize'] = histogram_settings[metric].binsize;
 }

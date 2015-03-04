@@ -7,9 +7,19 @@ flot: true
 bookwormjs: true
 ---
 
+<!--
+TODO:
+* Add series selector (magazines)
+* Add series highlighting per chart
+ -->
+
+
         <style>
         table {
             width: auto;
+        }
+        td {
+            font-size: 75%;
         }
         </style>
 
@@ -25,11 +35,9 @@ bookwormjs: true
         <script>
 
             var display_results = bwconfig.display_results;
-            //var display_results = ['pov'];
-            var magazines = [];
+            var magazine_list = [];
             var magazine_datatable;
-            var magazine_selector;
-            var magazine_dashboard;
+            var colors = [];
 
             var chart_data = {};
             var charts = {};
@@ -49,28 +57,45 @@ bookwormjs: true
                         fill: 0.9,
                     },
                 },
-//                 legend: {
-//                     container: $('#legend'),
-//                 },
+                selection: {
+                    mode: "x",
+                },
+                legend: {
+                    sorted: 'ascending',
+                },
             };
 
             function loadDataAndDraw( binneddata ) {
                 // Add result to data;
-                var new_data = [];
+                var series_data = [];
                 $.each( binneddata.bins, function(index, data) {
-                    new_data.push( [data.bin, data.count] );
+                    series_data.push( [data.bin, data.count] );
                 });
-                chart_data[binneddata.metric].push( {
+
+                // Used to consistently order series across charts
+                // and make coloring consistent
+                var magazine_index = $.inArray(binneddata.magazine, magazine_list);
+
+                chart_data[binneddata.metric][magazine_index] = {
                     label: binneddata.magazine,
                     hoverable: true,
                     clickable: true,
-                    data: new_data,
-                });
+                    color: magazine_index,
+                    data: series_data,
+                };
 
                 options.series.bars.barWidth = binneddata.binsize * 0.8;
                 options['xaxis'] = binneddata.xaxis;
 
-                $.plot('#histogram_' + binneddata.metric, chart_data[binneddata.metric], options);
+                $.each(chart_data, function(index, dataset) {
+                    dataset.color = index;
+                });
+
+                // Make sure all magazines have been processed before drawing.
+                // Still needs work.
+                if ( chart_data[binneddata.metric].length == magazine_list.length && chart_data[binneddata.metric].every( isDefined ) ) {
+                    charts[binneddata.metric] = $.plot('#histogram_' + binneddata.metric, chart_data[binneddata.metric], options);
+                }
 
                 // Now show the whole thing
                 $('#loading_message').hide();
@@ -83,23 +108,47 @@ bookwormjs: true
                 var div_width = $('#magazine_dashboard').parent().width()
                 var div_height = (div_width * 2) / 3;
                 $.each( display_results, function( metric_index, metric ) {
+                    var div_name = 'histogram_' + metric;
                     // Initialize data sets
                     chart_data[metric] = [];
                     // Add div for the chart
                     $('#magazine_dashboard').append("<h2>" + getFieldLabel(metric) + "</h2>" +
-                        "<div id=\"histogram_" + metric +
-                        "\" style=\"width: " + div_width + "px; height: " + div_height +
-                        "px;\"></div>" +
-                        "<div id=\"histogram_" + metric + "_legend\"></div>" +
+                        "<div id=\"" + div_name + "\" style=\"width: " + div_width + "px; height: " + div_height + "px;\">" +
+                        "</div>" +
                         "<hr />");
 
+                        $('#' + div_name).bind("plotselected", function (event, ranges) {
+                            $("#selection").text(ranges.xaxis.from.toFixed(1) + " to " + ranges.xaxis.to.toFixed(1));
+                            $.each(charts[metric].getXAxes(), function(_, axis) {
+                                var opts = axis.options;
+                                opts.min = ranges.xaxis.from;
+                                opts.max = ranges.xaxis.to;
+                            });
+                            charts[metric].setupGrid();
+                            charts[metric].draw();
+                            charts[metric].clearSelection();
+                        });
+
+                    $('#' + div_name).dblclick( function (event) {
+                            $.each(charts[metric].getXAxes(), function(_, axis) {
+                                var opts = axis.options;
+                                opts.min = null;
+                                opts.max = null;
+                            });
+                            charts[metric].setupGrid();
+                            charts[metric].draw();
+                            charts[metric].clearSelection();
+                    });
 
                     solrGetMagazines( function( magazines ) {
                         $.each( magazines, function( index, magazine ) {
+                            if ($.inArray(magazine.name, magazine_list) == -1) {
+                                magazine_list.push(magazine.name);
+                            }
                             solrGetBinnedMetric(magazine.name,
                                 metric,
-                                function( binneddata ) {
-                                    loadDataAndDraw( binneddata );
+                                function( data ) {
+                                    loadDataAndDraw( data );
                                 },
                                 logAjaxError);
                         });
