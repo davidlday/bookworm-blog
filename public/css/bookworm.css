@@ -126,18 +126,26 @@ table.scrollTable {
     width: 100%;
     border: 1px solid #ddd;
 }
-thead {
+table.scrollTable > thead {
     background-color: #eee;
 }
-thead th {
+table.scrollTable > thead > th {
     text-align: center;
     padding: 0.1em 0.3em;
 }
-tbody td {
+table.scrollTable > tbody > td {
     border-top: 1px solid #eee;
     border-right: 1px solid #eee;
     padding: 0.1em 0.3em;
 }
-tbody tr.odd {
+table.scrollTable > tbody > tr.odd {
     background-color: #f9f9f9;
+}
+
+/* Flot legend styling */
+div.legend > table {
+    width: auto;
+}
+div.legend > table td {
+    font-size: 62.5%;
 }

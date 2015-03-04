@@ -10,144 +10,43 @@ var bwconfig = {
         month: "long",
         day: "numeric"
     },
-    // Full list of metrics
-//     metrics: {
-//         automated_readability_index: {
-//             label: "Readability: Automated Readability Index",
-//             multivalue: false,
-//             binsize: 0.5,
-//         },
-//         avg_syllables_per_word: {
-//             label: "Avg. Syllables per Word",
-//             multivalue: false,
-//             binsize: 0.1,
-//         },
-//         avg_words_per_sentence: {
-//             label: "Avg. Words per Sentence",
-//             multivalue: false,
-//             binsize: 1.0,
-//         },
-//         coleman_liau_index: {
-//             label: "Readability: Coleman Liau Index",
-//             multivalue: false,
-//             binsize: 0.5,
-//         },
-//         dialogue_syllable_percentage: {
-//             label: "Percent Dialogue (Syllables)",
-//             multivalue: false,
-//             binsize: 5.0,
-//         },
-//         dialogue_word_percentage: {
-//             label: "Percent Dialogue (Words)",
-//             multivalue: false,
-//             binsize: 5.0,
-//         },
-//         dialogue_syllable_count: {
-//             label: "Dialogue Syllable Count",
-//             multivalue: false,
-//             binsize: 500,
-//         },
-//         dialogue_unique_word_count: {
-//             label: "Dialogue Unique Word Count",
-//             multivalue: false,
-//             binsize: 1.0,
-//         },
-//         dialogue_word_count: {
-//             label: "Dialogue Word Count",
-//             multivalue: false,
-//             binsize: 500,
-//         },
-//         flesch_kincaid_grade_level: {
-//             label: "Readability: Flesch Kincaid Grade Level",
-//             multivalue: false,
-//             binsize: 0.5,
-//         },
-//         flesch_reading_ease: {
-//             label: "Readability: Flesch Reading Ease",
-//             multivalue: false,
-//             binsize: 0.5,
-//         },
-//         gunning_fog_index: {
-//             label: "Readability: Gunning Fox Index",
-//             multivalue: false,
-//             binsize: 0.5,
-//         },
-//         lix: {
-//             label: "Readability: LIX",
-//             multivalue: false,
-//             binsize: 0.5,
-//         },
-//         narrative_syllable_count: {
-//             label: "Narrative Syllable Count",
-//             multivalue: false,
-//             binsize: 500,
-//         },
-//         narrative_word_count: {
-//             label: "Narrative Word Count",
-//             multivalue: false,
-//             binsize: 500,
-//         },
-//         rix: {
-//             label: "Readability: RIX",
-//             multivalue: false,
-//             binsize: 0.5,
-//         },
-//         sentence_count: {
-//             label: "Sentence Count",
-//             multivalue: false,
-//             binsize: 10,
-//         },
-//         smog_index: {
-//             label: "Readability: SMOG Index",
-//             multivalue: false,
-//             binsize: 0.5,
-//         },
-//         syllable_count: {
-//             label: "Syllable Count",
-//             multivalue: false,
-//             binsize: 500,
-//         },
-//         unique_word_count: {
-//             label: "Unique Word Count",
-//             multivalue: false,
-//             binsize: 1.0,
-//         },
-//         word_count: {
-//             label: "Word Count",
-//             multivalue: false,
-//             binsize: 250,
-//         },
-//     },
     // Field Definitions
+    // Maybe extract this from Solr
     fields: {
         url: {
             label: "Story URL",
             multivalue: false,
+            binsize: 1.0,
             datatype: 'text',
         },
         magazine: {
             label: "Magazine",
             multivalue: false,
+            binsize: 1.0,
             datatype: 'text',
         },
         author: {
             label: "Author(s)",
             multivalue: true,
+            binsize: 1.0,
             datatype: 'text',
         },
         genre: {
             label: "Magazine Genre",
             multivalue: true,
+            binsize: 1.0,
             datatype: 'text',
         },
         original_tags: {
             label: "Story Tags",
             multivalue: true,
+            binsize: 1.0,
             datatype: 'text',
         },
         pov: {
             label: "Point of View",
             multivalue: false,
+            binsize: 1.0,
             datatype: 'text',
         },
         automated_readability_index: {
@@ -287,13 +186,13 @@ var bwconfig = {
         'dialogue_word_percentage',
         'pov',
         'coleman_liau_index',
-        'automated_readability_index',
-        'flesch_kincaid_grade_level',
-        'smog_index',
-        'flesch_reading_ease',
-        'gunning_fog_index',
-        'rix',
-        'lix',
+//         'automated_readability_index',
+//         'flesch_kincaid_grade_level',
+//         'smog_index',
+//         'flesch_reading_ease',
+//         'gunning_fog_index',
+//         'rix',
+//         'lix',
     ],
     // URLs
     urls: {
@@ -310,29 +209,6 @@ var bwconfig = {
         minwl: 3,
         maxqt: 50,
         rows: 20,
-    },
-    // Defaults for Google Charts Bar
-    bar_options: {
-
-    },
-    // Controls Google Charts Histograms
-    histogram_defaults: {
-        legend:    {
-            position: 'none'
-        },
-        enableInteractivity: true,
-        chartArea: {
-            width: '80%',
-            height: '80%',
-        },
-        histogram: {
-            bucketSize: 1,
-        },
-        vAxis: {
-            gridlines: {
-                count: -1,
-            },
-        },
     },
 };
 
@@ -412,9 +288,9 @@ function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
             rows: 9999999,
         };
         solrSearch(params, function( data ) {
-            var results = { 'magazine': magazine,
-                'metric': metric,
-                'binsize': bwconfig.fields[metric].binsize,
+            var results = {
+                magazine: magazine,
+                metric: metric,
                 bins: [],
             }
             $.each( data.grouped['$bin'].groups, function(index, group) {
@@ -443,11 +319,7 @@ function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
             var results = {
                 magazine: magazine,
                 metric: metric,
-                binsize: 1,
                 bins: [],
-                xaxis: {
-                    mode: 'categories',
-                }
             }
             $.each( data.grouped[metric].groups, function(index, group) {
                 results.bins.push(
@@ -550,6 +422,43 @@ function populateAnalysisTableBody(analysisTableBody, display_metrics, data) {
     });
 }
 
+// Get chart options for a field
+function getFlotChartOptions( field ) {
+    var options = {
+        series: {
+            stack: true,
+            lines: {
+                show: false,
+                fill: true,
+                steps: false,
+            },
+            bars: {
+                align: 'center',
+                show: true,
+                barWidth: bwconfig.fields[field].binsize * 0.8,
+                lineWidth: 0,
+                fill: 0.9,
+            },
+        },
+        grid: {
+            hoverable: true,
+            clickable: true,
+            autoHighlight: true
+        },
+        selection: {
+            mode: "x",
+        },
+        legend: {
+            sorted: 'ascending',
+        },
+    };
+    if (bwconfig.fields[field].datatype != 'numeric') {
+        options['xaxis'] = {
+            mode: 'categories',
+        };
+    }
+    return options;
+}
 // Return the text label for a bookworm field
 function getFieldLabel( field ) {
     return bwconfig.fields[field].label;
@@ -569,16 +478,7 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-
-// Merge Default Histogram Options into Specific Options
-var histogram_settings = {};
-for (var metric in bwconfig.fields) {
-    // Merge recursively using jQuery extend
-    histogram_settings[metric] = $.extend( true, {}, bwconfig.histogram_defaults, bwconfig.fields[metric] );
-    histogram_settings[metric].title = histogram_settings[metric].label;
-    histogram_settings[metric]['histogram']['bucketSize'] = histogram_settings[metric].binsize;
-}
-
+// Default Ajax Error Handler
 function logAjaxError( message ) {
     console.log(message);
 }
