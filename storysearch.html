@@ -25,9 +25,9 @@ bookwormjs: true
 
         <script>
             // Get query text
-            var query = getParameterByName('q') || '';
-            var start = Number( getParameterByName('s')) || 0;
-            var rows = Number( getParameterByName('r')) || 10;
+            var query = bookworm.getParameterByName('q') || '';
+            var start = Number( bookworm.getParameterByName('s')) || 0;
+            var rows = Number( bookworm.getParameterByName('r')) || 10;
 
             // Controls what metrics are displayed.
             var showMetrics = bookworm.display_results;
@@ -36,7 +36,8 @@ bookwormjs: true
                 // Update results stats
                 $('#searchStats').empty();
                 $('#searchStats').append(
-                    "<p>Something went wrong. Please check your query and try again.</p>"
+                    "<p>Something went wrong. Please check your query and try again.</p>" +
+                    '<pre>' + thrownMessage + '</pre>'
                 );
                 console.log( thrownMessage );
             }
@@ -82,17 +83,19 @@ bookwormjs: true
                         '<thead><tr><td>Metric</td><td>Value</td></tr></thead>' +
                         '<tbody id="analysisTableBody-' + itemNumber + '"></tbody>' +
                         '</table>' +
-                        '<h3>Top ' + data.moreLikeThis[doc.url].docs.length + ' Similar Stories</h3>' +
+                        '<h3>Top ' + data.moreLikeThis[doc.url].docs.length +
+                        ' Similar Stories</h3>' +
                         '<table class="scrollTable" id="mltTable">' +
-                        '<thead><tr><td>Title</td><td>Author</td><td>Magazine</td><td>Published</td></tr></thead>'+
+                        '<thead><tr><td>Title</td><td>Author</td>' +
+                        '<td>Magazine</td><td>Published</td></tr></thead>'+
                         '<tbody id="mltTableBody-' + itemNumber + '"></tbody>' +
                         '</table>' +
                         "</div>"+
                         "<hr />"
                     );
-                    populateAnalysisTableBody('#analysisTableBody-' + itemNumber,
+                    bookworm.ui.populateAnalysisTableBody('#analysisTableBody-' + itemNumber,
                         showMetrics, doc );
-                    populateMltTableBody('#mltTableBody-' + itemNumber,
+                    bookworm.ui.populateMltTableBody('#mltTableBody-' + itemNumber,
                         data.moreLikeThis[doc.url].docs );
                 });
 
@@ -133,7 +136,8 @@ bookwormjs: true
                 $('#results').empty();
                 $('#results').hide();
                 // Invoke Search
-                solrSearchText( query, start, rows, showMetrics, callback, displayAjaxError );
+                bookworm.solr.searchText( query, start, rows, showMetrics,
+                    callback, displayAjaxError );
             }
 
             // Hook enter to search
@@ -155,52 +159,51 @@ bookwormjs: true
                 }
 
                 // Bind autocomplete to input
-                $('#searchText')
-                // don't navigate away from the field on tab when selecting an item
-                    .bind( "keydown", function( event ) {
-                        if ( event.keyCode === $.ui.keyCode.TAB &&
+                $('#searchText').bind( "keydown", function( event ) {
+                    // don't navigate away from the field on tab when selecting an item
+                    if ( event.keyCode === $.ui.keyCode.TAB &&
                             $( this ).autocomplete( "instance" ).menu.active ) {
-                            event.preventDefault();
+                        event.preventDefault();
+                    }
+                })
+                .autocomplete({
+                    minLength: 3,
+                    source: function( request, response ) {
+                        var search_text = request.term.replace('"', '')
+                        var all_terms = search_text.split( /\s+/ );
+                        var term = all_terms.pop();
+                        var params = {
+                            q: search_text + '*',
+                            'q.op': 'AND',
+                            facet: true,
+                            'facet.field': 'text',
+                            'facet.prefix': term,
+                            'facet.mincount': 1,
+                            wt: 'json',
+                            fl: 'title',
+                            rows: 0,
                         }
-                    })
-                    .autocomplete({
-                        minLength: 3,
-                        source: function( request, response ) {
-                            var search_text = request.term.replace('"', '')
-                            var all_terms = search_text.split( /\s+/ );
-                            var term = all_terms.pop();
-                            var params = {
-                                q: search_text + '*',
-                                'q.op': 'AND',
-                                facet: true,
-                                'facet.field': 'text',
-                                'facet.prefix': term,
-                                'facet.mincount': 1,
-                                wt: 'json',
-                                fl: 'title',
-                                rows: 0,
+                        bookworm.solr.search( params, function( data ) {
+                            var terms = [];
+                            // Need to step by 2. Faceting also returns the count
+                            // of each term. (i.e. [ "term1", 5 , "term2", 4, ...] )
+                            for ( i = 0; i < data.facet_counts.facet_fields.text.length;
+                                    i += 2 ) {
+                                terms.push( ( all_terms.join(" ") + " "
+                                    + data.facet_counts.facet_fields.text[i] ).trim() );
                             }
-                            solrSearch( params, function( data ) {
-                                var terms = [];
-                                // Need to step by 2. Faceting also returns the count
-                                // of each term. (i.e. [ "term", 5 , "term2", 4, ...] )
-                                for ( i = 0; i < data.facet_counts.facet_fields.text.length;
-                                        i += 2 ) {
-                                    terms.push( ( all_terms.join(" ") + " "
-                                        + data.facet_counts.facet_fields.text[i] ).trim() );
-                                }
-                                response( terms );
-                            });
-                        },
-                        focus: function() {
-                            // prevent value inserted on focus
-                            return false;
-                        },
-                        select: function( event, ui ) {
-                            this.value = ui.item.value + " ";
-                            return false;
-                        },
-                    });
+                            response( terms );
+                        });
+                    },
+                    focus: function() {
+                        // prevent value inserted on focus
+                        return false;
+                    },
+                    select: function( event, ui ) {
+                        this.value = ui.item.value + " ";
+                        return false;
+                    },
+                });
 
             });
 

@@ -27,7 +27,7 @@ TODO:
 
         <div id="messagebox" style="width: 100%;">
             Loading Data...
-            <div id="progressbar" style="height: 35px;">
+            <div id="progressbar" style="height: 30px;">
                 <div class="progress-label font-62">Initializing...</div>
             </div>
         </div>
@@ -45,7 +45,6 @@ TODO:
         <script>
             // Page Globals
             var showMetrics = bookworm.display_results;
-            var loaded = [];
             var magazines = [];
             var datasets = {};
             var charts = {};
@@ -56,11 +55,10 @@ TODO:
                 $.each( showMetrics, function( undefined, metric ) {
                     // Initialize data sets for metric
                     datasets[metric] = {};
-                    loaded[metric] = 0;
 
                     // For each magazine, load data and draw
                     $.each( magazines, function( index, magazine ) {
-                        solrGetBinnedMetric(magazine.name,
+                        bookworm.solr.getBinnedCounts(magazine.name,
                             metric,
                             function( data ) {
                                 // Add result to data;
@@ -86,20 +84,24 @@ TODO:
                                     $( "#progressbar" ).progressbar( "option", "value" ) + 1
                                 );
                             },
-                            logAjaxError);
+                            function( message) {
+                                console.log( message );
+                            });
                     });
                 });
             }
 
             // Limit chart datasets to one magazine.
             function loadSelectedMagazine() {
-                var selectedMagazine = $('#magazines-select').val();
+                var selectedMagazine = $('#magazines-select').val(),
+                    dataset = [],
+                    options;
                 if ( selectedMagazine === '*' ) {
                     loadAllMagazines();
                 } else {
                     $.each( showMetrics, function( index, metric ) {
-                        var dataset = [];
-                        var options = getFlotChartOptions( metric );
+                        dataset = [];
+                        options = bookworm.flot.getChartOptions( metric );
                         $.each( datasets[metric], function( key, val ) {
                             if (key === selectedMagazine) {
                                 dataset.push(val);
@@ -113,12 +115,14 @@ TODO:
 
 
             function loadAllMagazines() {
+                var dataset = [],
+                    options;
                 $.each( showMetrics, function( index, metric ) {
-                    var dataset = [];
+                    dataset = [];
                     $.each(datasets[metric], function(key, val) {
                         dataset.push(val);
                     });
-                    options = getFlotChartOptions( metric );
+                    options = bookworm.flot.getChartOptions( metric );
                     options.legend.show = true;
                     charts[metric] = $.plot('#chart_' + metric, dataset, options);
                 });
@@ -133,15 +137,19 @@ TODO:
                 $( '#dashboard' ).show();
 
                 //Create initial charts
-                var div_width = ( $( '#dashboard' ).parent().width() );
-                var div_height = (div_width * 2) / 3;
+                var div_width = ( $( '#dashboard' ).parent().width() ),
+                    div_height = (div_width * 2) / 3,
+                    div_name = '',
+                    dataset = [],
+                    opts;
 
                 $.each( showMetrics, function( index, metric ) {
                     // Set the div name
-                    var div_name = 'chart_' + metric;
+                    div_name = 'chart_' + metric;
                     // Add div for the chart
                     $( '#dashboard' ).append(
-                        '<h3 class="text-center">' + getFieldLabel(metric) + '</h3>' +
+                        '<h3 class="text-center">' +
+                        bookworm.fields.getFieldLabel( metric ) + '</h3>' +
                         '<div id="' + div_name + '"></div>' +
                         '<hr />'
                     );
@@ -151,12 +159,12 @@ TODO:
                     // Selection handler - zooms in on a selected section
                     $( '#' + div_name ).bind( 'plotselected', function ( event, ranges ) {
                         $.each(charts[metric].getXAxes(), function( _, axis ) {
-                            var opts = axis.options;
+                            opts = axis.options;
                             opts.min = ranges.xaxis.from;
                             opts.max = ranges.xaxis.to;
                         });
                         $.each(charts[metric].getYAxes(), function( _, axis ) {
-                            var opts = axis.options;
+                            opts = axis.options;
                             opts.min = ranges.yaxis.from;
                             opts.max = ranges.yaxis.to;
                         });
@@ -168,12 +176,12 @@ TODO:
                     // Reset handler - double click returns graph to full
                     $( '#' + div_name ).dblclick( function ( event ) {
                             $.each(charts[metric].getXAxes(), function( _, axis ) {
-                                var opts = axis.options;
+                                opts = axis.options;
                                 opts.min = null;
                                 opts.max = null;
                             });
                             $.each(charts[metric].getYAxes(), function( _, axis ) {
-                                var opts = axis.options;
+                                opts = axis.options;
                                 opts.min = null;
                                 opts.max = null;
                             });
@@ -183,11 +191,11 @@ TODO:
                     });
 
                     // Get dataset and options
-                    var dataset = [];
+                    dataset = [];
                     $.each( datasets[metric], function( key, val ) {
                         dataset.push( val );
                     });
-                    options = getFlotChartOptions( metric );
+                    options = bookworm.flot.getChartOptions( metric );
                     options.legend.show = true;
                     // Create Chart
                     charts[metric] = $.plot( '#chart_' + metric, dataset, options );
@@ -197,8 +205,13 @@ TODO:
             // Start the whole process
             $( document ).ready( function() {
                 $( '#dashboard' ).hide();
-                solrGetMagazines( function( data ) {
-                    magazines = data;
+                bookworm.solr.getMagazines( function( data ) {
+                    var magazines = data;
+                        totalCalls = magazines.length * showMetrics.length,
+                        progressbar = $( "#progressbar" ),
+                        progressLabel = $( ".progress-label" );
+
+                    // Populate magazine select options
                     $.each( magazines, function( index, magazine ) {
                             $( '#magazines-select' ).append(
                                 '<option value="' + magazine.name + '">' +
@@ -206,10 +219,8 @@ TODO:
                                 ' (' + magazine.totalStories + ' stories) </option>'
                             );
                     });
+
                     // Setup the Progress Bar
-                    var totalCalls = magazines.length * showMetrics.length
-                    var progressbar = $( "#progressbar" );
-                    var progressLabel = $( ".progress-label" );
                     progressbar.progressbar({
                         max: totalCalls,
                         value: false,
@@ -225,7 +236,9 @@ TODO:
                         }
                     });
                     loadDataSets( magazines );
-                }, logAjaxError);
+                }, function( message ) {
+                    console.log( message );
+                });
                 $( '#magazines-select' ).on( 'change', loadSelectedMagazine );
             })
             .ajaxStop( function() {

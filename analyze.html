@@ -80,15 +80,16 @@ bookwormjs: true
                 // Make sure there's text and run analysis
                 var story = $('#storyText').val();
                 if (story != null && story != '') {
-                    analyzeText(story, displayAnalysis, displayAjaxError);
-                    solrMoreLikeThisText(story, displaySimilarStories, displayAjaxError);
+//                     analyzeText(story, displayAnalysis, displayAjaxError);
+                    bookworm.analyzer.analyzeText(story, displayAnalysis, displayAjaxError);
+                    bookworm.solr.moreLikeThisText(story, displaySimilarStories, displayAjaxError);
                 }
             }
 
             // Show analysis
             function displayAnalysis(data) {
                 // Populate analysis results
-                populateAnalysisTableBody('#analysisTableBody', display_results, data);
+                bookworm.ui.populateAnalysisTableBody('#analysisTableBody', display_results, data);
 
                 // Start of comparing work to market metrics
 //                 solrGetMagazines( function( magazines ) {
@@ -128,7 +129,7 @@ bookwormjs: true
 
             // Show similar stories
             function displaySimilarStories(data) {
-                populateMltTableBody('#mltTableBody', data);
+                bookworm.ui.populateMltTableBody('#mltTableBody', data);
             }
 
             // Log Ajax Error
