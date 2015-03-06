@@ -12,118 +12,150 @@ TODO:
 * Add series highlighting per chart
  -->
 
+        <style>
+            .ui-progressbar {
+                position: relative;
+            }
+            .progress-label {
+                position: absolute;
+                left: 50%;
+                top: 4px;
+                font-weight: bold;
+                text-shadow: 1px 1px 0 #fff;
+            }
+        </style>
+
         <div id="messagebox" style="width: 100%;">
-        Loading data...
+            Loading Data...
+            <div id="progressbar" style="height: 35px;">
+                <div class="progress-label font-62">Initializing...</div>
+            </div>
         </div>
         <div id="legend"></div>
-        <div id="selectors">
-            <label for="magazines-select" style="display: block; margin: 30px 0 0 0;">Select A Magazine</label>
-            <select name="magazines-select" id="magazines-select" class="font-62">
-              <option value='*'>-ALL-</option>
-            </select>
-        </div>
-        <div id="magazine_dashboard" style="width: 100%; display: none;">
+        <div id="dashboard" style="display: none;">
+            <div id="selectors">
+                <label for="magazines-select" style="display: block; margin: 30px 0 0 0;">Select A Magazine</label>
+                <select name="magazines-select" id="magazines-select" class="font-62">
+                  <option value='*'>-ALL-</option>
+                </select>
+            </div>
             <hr />
         </div>
 
         <script>
-
-            var display_results = bookworm.display_results;
+            // Page Globals
+            var showMetrics = bookworm.display_results;
             var loaded = [];
-            var magazine_list = [];
-            var magazine_datatable;
-            var colors = [];
-
+            var magazines = [];
             var datasets = {};
             var charts = {};
             var chartoptions = {};
 
-            function loadSelectedMagazine() {
-                var selected_magazine = $('#magazines-select').val();
+            // Retrieve all datasets
+            function loadDataSets( magazines ) {
+                $.each( showMetrics, function( undefined, metric ) {
+                    // Initialize data sets for metric
+                    datasets[metric] = {};
+                    loaded[metric] = 0;
 
-                $.each( display_results, function( metric_index, metric ) {
-                    if ($.inArray(selected_magazine, magazine_list) === -1) {
-                        drawAllData( metric );
-                    } else {
+                    // For each magazine, load data and draw
+                    $.each( magazines, function( index, magazine ) {
+                        solrGetBinnedMetric(magazine.name,
+                            metric,
+                            function( data ) {
+                                // Add result to data;
+                                var series_data = [];
+                                $.each( data.bins, function(index, data) {
+                                    series_data.push( [data.bin, data.count] );
+                                });
+
+                                // Used to consistently order series across charts
+                                // and make coloring consistent
+                                var color_int = index;
+
+                                datasets[data.metric][data.magazine] = {
+                                    label: data.magazine,
+                                    hoverable: true,
+                                    clickable: true,
+                                    color: color_int,
+                                    data: series_data,
+                                };
+
+                                // Tick off loaded dataset.
+                                $( "#progressbar" ).progressbar( "option", "value",
+                                    $( "#progressbar" ).progressbar( "option", "value" ) + 1
+                                );
+                            },
+                            logAjaxError);
+                    });
+                });
+            }
+
+            // Limit chart datasets to one magazine.
+            function loadSelectedMagazine() {
+                var selectedMagazine = $('#magazines-select').val();
+                if ( selectedMagazine === '*' ) {
+                    loadAllMagazines();
+                } else {
+                    $.each( showMetrics, function( index, metric ) {
                         var dataset = [];
                         var options = getFlotChartOptions( metric );
                         $.each( datasets[metric], function( key, val ) {
-                            if (key === selected_magazine) {
+                            if (key === selectedMagazine) {
                                 dataset.push(val);
                             }
                         });
                         options.legend.show = false;
-                        charts[metric] = $.plot('#histogram_' + metric, dataset, options);
-                    }
-                });
-
-            }
-
-            function drawAllData( metric ) {
-                var dataset = [];
-                $.each(datasets[metric], function(key, val) {
-                    dataset.push(val);
-                });
-                options = getFlotChartOptions( metric );
-                options.legend.show = true;
-                charts[metric] = $.plot('#histogram_' + metric, dataset, options);
-            }
-
-            function loadDataAndDraw( data ) {
-                // Add result to data;
-                var series_data = [];
-                $.each( data.bins, function(index, data) {
-                    series_data.push( [data.bin, data.count] );
-                });
-
-                // Used to consistently order series across charts
-                // and make coloring consistent
-                var color_int = $.inArray(data.magazine, magazine_list);
-
-                datasets[data.metric][data.magazine] = {
-                    label: data.magazine,
-                    hoverable: true,
-                    clickable: true,
-                    color: color_int,
-                    data: series_data,
-                };
-
-                // Make sure all magazines have been processed before drawing.
-                loaded[data.metric]++;
-                if ( loaded[data.metric] === magazine_list.length ) {
-                    drawAllData( data.metric );
+                        charts[metric] = $.plot('#chart_' + metric, dataset, options);
+                    });
                 }
-
-                // Now show the whole thing
-                $('#messagebox').hide();
-                $('#messagebox').empty();
-                $('#magazine_dashboard').show();
-
             }
 
+
+            function loadAllMagazines() {
+                $.each( showMetrics, function( index, metric ) {
+                    var dataset = [];
+                    $.each(datasets[metric], function(key, val) {
+                        dataset.push(val);
+                    });
+                    options = getFlotChartOptions( metric );
+                    options.legend.show = true;
+                    charts[metric] = $.plot('#chart_' + metric, dataset, options);
+                });
+            }
+
+            // Draw charts - called via .ajaxStop()
             function createCharts( magazines ) {
+                // Now show the whole thing
+                // Flot doesn't like drawing in hidden divs
+                $( '#messagebox' ).hide();
+                $( '#messagebox' ).empty();
+                $( '#dashboard' ).show();
+
                 //Create initial charts
-                var div_width = $('#magazine_dashboard').parent().width()
+                var div_width = ( $( '#dashboard' ).parent().width() );
                 var div_height = (div_width * 2) / 3;
-                $.each( display_results, function( metric_index, metric ) {
-                    var div_name = 'histogram_' + metric;
-                    // Initialize data sets
-                    datasets[metric] = {};
+
+                $.each( showMetrics, function( index, metric ) {
+                    // Set the div name
+                    var div_name = 'chart_' + metric;
                     // Add div for the chart
-                    $( '#magazine_dashboard' ).append("<h2>" + getFieldLabel(metric) + "</h2>" +
-                        "<div id=\"" + div_name + "\" style=\"width: " + div_width + "px; height: " + div_height + "px;\">" +
-                        "</div>" +
-                        "<hr />");
+                    $( '#dashboard' ).append(
+                        '<h3 class="text-center">' + getFieldLabel(metric) + '</h3>' +
+                        '<div id="' + div_name + '"></div>' +
+                        '<hr />'
+                    );
+                    $( '#' + div_name ).width( div_width );
+                    $( '#' + div_name ).height( div_height );
 
                     // Selection handler - zooms in on a selected section
-                    $( '#' + div_name ).bind("plotselected", function (event, ranges) {
-//                         $("#selection").text(ranges.xaxis.from.toFixed(1) + " to " + ranges.xaxis.to.toFixed(1));
-                        $.each(charts[metric].getXAxes(), function(_, axis) {
+                    $( '#' + div_name ).bind( 'plotselected', function ( event, ranges ) {
+                        $.each(charts[metric].getXAxes(), function( _, axis ) {
                             var opts = axis.options;
                             opts.min = ranges.xaxis.from;
                             opts.max = ranges.xaxis.to;
                         });
-                        $.each(charts[metric].getYAxes(), function(_, axis) {
+                        $.each(charts[metric].getYAxes(), function( _, axis ) {
                             var opts = axis.options;
                             opts.min = ranges.yaxis.from;
                             opts.max = ranges.yaxis.to;
@@ -134,13 +166,13 @@ TODO:
                     });
 
                     // Reset handler - double click returns graph to full
-                    $( '#' + div_name ).dblclick( function (event) {
-                            $.each(charts[metric].getXAxes(), function(_, axis) {
+                    $( '#' + div_name ).dblclick( function ( event ) {
+                            $.each(charts[metric].getXAxes(), function( _, axis ) {
                                 var opts = axis.options;
                                 opts.min = null;
                                 opts.max = null;
                             });
-                            $.each(charts[metric].getYAxes(), function(_, axis) {
+                            $.each(charts[metric].getYAxes(), function( _, axis ) {
                                 var opts = axis.options;
                                 opts.min = null;
                                 opts.max = null;
@@ -150,34 +182,53 @@ TODO:
                             charts[metric].clearSelection();
                     });
 
-                    loaded[metric] = 0;
-
-                    // For each magazine, load data and draw
-                    $.each( magazines, function( index, magazine ) {
-                        solrGetBinnedMetric(magazine.name,
-                            metric,
-                            function( data ) {
-                                loadDataAndDraw( data );
-                            },
-                            logAjaxError);
+                    // Get dataset and options
+                    var dataset = [];
+                    $.each( datasets[metric], function( key, val ) {
+                        dataset.push( val );
                     });
-
+                    options = getFlotChartOptions( metric );
+                    options.legend.show = true;
+                    // Create Chart
+                    charts[metric] = $.plot( '#chart_' + metric, dataset, options );
                 });
             }
 
             // Start the whole process
-            $(document).ready( function() {
-                solrGetMagazines( function( magazines ) {
+            $( document ).ready( function() {
+                $( '#dashboard' ).hide();
+                solrGetMagazines( function( data ) {
+                    magazines = data;
                     $.each( magazines, function( index, magazine ) {
-                        if ($.inArray(magazine.name, magazine_list) === -1) {
-                            magazine_list.push(magazine.name);
                             $( '#magazines-select' ).append(
-                                '<option>' + magazine.name + '</option>'
+                                '<option value="' + magazine.name + '">' +
+                                magazine.name +
+                                ' (' + magazine.totalStories + ' stories) </option>'
                             );
+                    });
+                    // Setup the Progress Bar
+                    var totalCalls = magazines.length * showMetrics.length
+                    var progressbar = $( "#progressbar" );
+                    var progressLabel = $( ".progress-label" );
+                    progressbar.progressbar({
+                        max: totalCalls,
+                        value: false,
+                        change: function() {
+                            progressLabel.text(
+                                ( Math.floor(
+                                    progressbar.progressbar( "value" ) / totalCalls * 100)
+                                ) + "%"
+                            );
+                        },
+                        complete: function() {
+                            progressLabel.text( "Complete!" );
                         }
                     });
-                    $( '#magazines-select' ).on('change', loadSelectedMagazine);
-                    createCharts(magazines);
+                    loadDataSets( magazines );
                 }, logAjaxError);
+                $( '#magazines-select' ).on( 'change', loadSelectedMagazine );
+            })
+            .ajaxStop( function() {
+                createCharts( magazines );
             });
         </script>
