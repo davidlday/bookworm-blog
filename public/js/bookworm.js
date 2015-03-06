@@ -1,18 +1,21 @@
 /**
 * Common Bookworm JavaScript
 */
+"use strict";
 
 // Defaults
-var bwconfig = {
-    // Date display options
-    date_options: {
+var bookworm = bookworm || {};
+
+// Date display options
+bookworm.date_options = {
         year: "numeric",
         month: "long",
         day: "numeric"
-    },
-    // Field Definitions
-    // Maybe extract this from Solr
-    fields: {
+    };
+
+// Field Definitions
+// Maybe extract this from Solr
+bookworm.fields = {
         url: {
             label: "Story URL",
             multivalue: false,
@@ -77,7 +80,7 @@ var bwconfig = {
             label: "Percent Dialogue (Syllables)",
             multivalue: false,
             binsize: 5.0,
-            type: 'numeric',
+            datatype: 'numeric',
         },
         dialogue_word_percentage: {
             label: "Percent Dialogue (Words)",
@@ -175,9 +178,10 @@ var bwconfig = {
             binsize: 250,
             datatype: 'numeric',
         },
-    },
-    // Controls what metrics are displayed.
-    display_results: [
+    };
+
+// Controls what metrics are displayed.
+bookworm.display_results = [
         'syllable_count',
         'word_count',
         'sentence_count',
@@ -193,60 +197,61 @@ var bwconfig = {
 //         'gunning_fog_index',
 //         'rix',
 //         'lix',
-    ],
-    // URLs
-    urls: {
+    ];
+
+// URLs
+bookworm.urls = {
         // search script
         search: 'http://bookworm.davidlday.com/public/scripts/storysearch.py',
         // MoreLikeThis script
         mlt: 'http://bookworm.davidlday.com/public/scripts/storieslikethis.py',
         // Analyzer script
         analyzer: 'http://bookworm.davidlday.com/public/scripts/analyze.py',
-    },
-    // MoreLikeThis
-    mlt: {
+    };
+
+// MoreLikeThis
+bookworm.mlt = {
         fl: 'text',
         minwl: 3,
         maxqt: 50,
         rows: 20,
-    },
-};
+    };
 
 // Solr Functions
 // General Search
-function solrSearch(params, successCallback, errorCallback) {
-    $.ajax({type: "GET",
-        url: bwconfig.urls.search,
+function solrSearch( params, successCallback, errorCallback ) {
+    $.ajax( {type: "GET",
+        url: bookworm.urls.search,
         data: params,
         crossDomain: true,
         dataType: 'json',
-        success: function(data) {
-            successCallback(data)
+        success: function( data ) {
+            successCallback( data )
         },
-        error: function (xhr, ajaxOptions, thrownError) {
-            errorCallback(thrownError);
+        error: function ( xhr, ajaxOptions, thrownError ) {
+            errorCallback( thrownError );
         },
     });
 }
 
 // Convenience Search
-function solrSearchText(txt, start, rows, successCallback, errorCallback) {
+function solrSearchText( txt, start, rows, fields, successCallback, errorCallback) {
     var params = {
         q: txt,
         'q.op': 'AND',
         wt: 'json',
-        fl: 'magazine,title,url,id,author,pub_date,score,' + display_results.join(),
+        fl: 'magazine,title,url,id,author,pub_date,score,' + fields.join(),
         mlt: true,
-        'mlt.fl': bwconfig.mlt.fl,
-        'mlt.count': bwconfig.mlt.rows,
+        'mlt.fl': bookworm.mlt.fl,
+        'mlt.count': bookworm.mlt.rows,
         rows: rows,
         start: start,
     };
-    solrSearch(params, successCallback, errorCallback);
+    solrSearch( params, successCallback, errorCallback);
 }
 
 // Convenience List of Magazines w/ number of total stories
-function solrGetMagazines(successCallback, errorCallback) {
+function solrGetMagazines( successCallback, errorCallback ) {
     var params = {
         q: '*',
         'q.op': 'AND',
@@ -256,9 +261,9 @@ function solrGetMagazines(successCallback, errorCallback) {
         group: true,
         'group.field': 'magazine',
     };
-    solrSearch(params, function( data ) {
+    solrSearch( params, function( data ) {
         var magazines = [];
-        $.each( data.grouped.magazine.groups, function(index, group) {
+        $.each( data.grouped.magazine.groups, function( index, group ) {
             magazines.push(
                 {
                     name: group.doclist.docs[0].magazine,
@@ -268,32 +273,32 @@ function solrGetMagazines(successCallback, errorCallback) {
         });
         successCallback( magazines );
     },
-    errorCallback);
+    errorCallback );
 }
 
 // Convenience Binned Data for Magazine / Metric
-function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
+function solrGetBinnedMetric( magazine, metric, successCallback, errorCallback ) {
     // Test if we're grouping on numbers or text fields
-    if (bwconfig.fields[metric].datatype == 'numeric') {
+    if ( bookworm.fields[metric].datatype === 'numeric') {
         var bin_formula = 'product($binsize,floor(div(' + metric + ',$binsize)))';
         var params = {
             q: 'magazine:"' + magazine + '"',
             wt: 'json',
             fl: 'magazine',
             bin: bin_formula,
-            binsize: bwconfig.fields[metric].binsize,
+            binsize: bookworm.fields[metric].binsize,
             sort: '$bin asc',
             group: true,
             'group.func': '$bin',
             rows: 9999999,
         };
-        solrSearch(params, function( data ) {
+        solrSearch( params, function( data ) {
             var results = {
                 magazine: magazine,
                 metric: metric,
                 bins: [],
             }
-            $.each( data.grouped['$bin'].groups, function(index, group) {
+            $.each( data.grouped['$bin'].groups, function( index, group ) {
                 results.bins.push(
                     {
                         bin: group.groupValue,
@@ -303,7 +308,7 @@ function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
             });
             successCallback( results );
         },
-        errorCallback);
+        errorCallback );
     } else {
         var params = {
             q: 'magazine:"' + magazine + '"',
@@ -314,14 +319,14 @@ function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
             rows: 9999999,
             sort: metric + ' asc',
         };
-        solrSearch(params, function( data ) {
+        solrSearch( params, function( data ) {
             var groups = [];
             var results = {
                 magazine: magazine,
                 metric: metric,
                 bins: [],
             }
-            $.each( data.grouped[metric].groups, function(index, group) {
+            $.each( data.grouped[metric].groups, function( index, group ) {
                 results.bins.push(
                     {
                         bin: group.groupValue,
@@ -331,91 +336,91 @@ function solrGetBinnedMetric(magazine, metric, successCallback, errorCallback) {
             });
             successCallback( results );
         },
-        errorCallback);
+        errorCallback );
     }
 }
 
 // General MoreLikeThis
-function solrMoreLikeThis(params, successCallback, errorCallback) {
-    $.ajax({type: "POST",
-        url: bwconfig.urls.mlt,
+function solrMoreLikeThis( params, successCallback, errorCallback ) {
+    $.ajax( {type: "POST",
+        url: bookworm.urls.mlt,
         crossDomain: true,
         data: params,
         dataType: 'json',
-        success: function(data) {
-            successCallback(data.response.docs)
+        success: function( data ) {
+            successCallback( data.response.docs )
         },
-        error: function (xhr, ajaxOptions, thrownError) {
-            errorCallback(thrownError);
+        error: function ( xhr, ajaxOptions, thrownError ) {
+            errorCallback( thrownError );
         },
     });
 }
 
 // Convenience MoreLikeThis
-function solrMoreLikeThisText(txt, successCallback, errorCallback) {
+function solrMoreLikeThisText( txt, successCallback, errorCallback ) {
     var params = {
         'stream.body': txt,
-        rows: bwconfig.mlt.rows,
+        rows: bookworm.mlt.rows,
         'mlt.match.include': false,
         fl: '*,score',
         'mlt.interestingTerms': 'details',
-        'mlt.fl': bwconfig.mlt.fl,
-        'mlt.minwl': bwconfig.mlt.minwl,
-        'mlt.maxqt': bwconfig.mlt.maxqt,
+        'mlt.fl': bookworm.mlt.fl,
+        'mlt.minwl': bookworm.mlt.minwl,
+        'mlt.maxqt': bookworm.mlt.maxqt,
     };
-    solrMoreLikeThis(params, successCallback, errorCallback);
+    solrMoreLikeThis( params, successCallback, errorCallback );
 }
 
 // Analyze Text using Bookworm Utility Script
-function analyzeText(txt, successCallback, errorCallback) {
+function analyzeText( txt, successCallback, errorCallback ) {
     var post_data = {'text': txt};
-    $.ajax({
+    $.ajax( {
         type: "POST",
-        url: bwconfig.urls.analyzer,
+        url: bookworm.urls.analyzer,
         crossDomain: true,
         data: post_data,
         dataType: 'json',
-        success: function(data) {
-            successCallback(data);
+        success: function( data ) {
+            successCallback( data );
         },
-        error: function (xhr, ajaxOptions, thrownError) {
-            errorCallback(thrownError);
+        error: function ( xhr, ajaxOptions, thrownError ) {
+            errorCallback( thrownError );
         },
     });
 }
 
 // UI Functions
 // Add stories to mlt table body
-function populateMltTableBody(mltTableBody, docs) {
-    $.each(docs, function(index, doc) {
-        var published_date = new Date(doc.pub_date);
-        $(mltTableBody).append(
+function populateMltTableBody( mltTableBody, docs ) {
+    $.each( docs, function( index, doc ) {
+        var published_date = new Date( doc.pub_date );
+        $( mltTableBody ).append(
             "<tr id=\"mlt-" + index + "\">" +
             "<td><a href=\"" +doc.url + "\" target=\"story\">" + doc.title + "</a></td>" +
-            "<td>" + doc.author.join(', ') + "</td>" +
+            "<td>" + doc.author.join( ', ') + "</td>" +
             "<td>" + doc.magazine + "</td>" +
-            "<td>" + published_date.toLocaleDateString('en-us', bwconfig.date_options) + "</td>" +
+            "<td>" + published_date.toLocaleDateString( 'en-us', bookworm.date_options ) + "</td>" +
             "</tr>"
         );
     });
 }
 
 // Add metrics to analysis table body
-function populateAnalysisTableBody(analysisTableBody, display_metrics, data) {
+function populateAnalysisTableBody( analysisTableBody, display_metrics, data ) {
     // Add results to summary table
-    $.each(display_metrics, function(index, metric) {
+    $.each( display_metrics, function( index, metric ) {
         var formatted_value = data[metric];
-        if (!isNaN(data[metric])) {
-            var value = Number(data[metric]);
-            if (Number.isInteger(value)) {
+        if ( !isNaN( data[metric])) {
+            var value = Number( data[metric]);
+            if ( Number.isInteger( value )) {
                 formatted_value = value;
             } else {
-                formatted_value = Number(value).toFixed(4);
+                formatted_value = Number( value ).toFixed( 4 );
             }
         }
-        $(analysisTableBody).append(
+        $( analysisTableBody ).append(
             "<tr id=\"" + metric + "\">" +
-            "<td>" + getFieldLabel(metric) + "</td>" +
+            "<td>" + getFieldLabel( metric ) + "</td>" +
             "<td class=\"text-right\">" + formatted_value + "</td>" +
             "</tr>"
         );
@@ -435,7 +440,7 @@ function getFlotChartOptions( field ) {
             bars: {
                 align: 'center',
                 show: true,
-                barWidth: bwconfig.fields[field].binsize * 0.8,
+                barWidth: bookworm.fields[field].binsize * 0.8,
                 lineWidth: 0,
                 fill: 0.9,
             },
@@ -446,13 +451,13 @@ function getFlotChartOptions( field ) {
             autoHighlight: true
         },
         selection: {
-            mode: "x",
+            mode: "xy",
         },
         legend: {
             sorted: 'ascending',
         },
     };
-    if (bwconfig.fields[field].datatype != 'numeric') {
+    if ( bookworm.fields[field].datatype !== 'numeric') {
         options['xaxis'] = {
             mode: 'categories',
         };
@@ -461,24 +466,24 @@ function getFlotChartOptions( field ) {
 }
 // Return the text label for a bookworm field
 function getFieldLabel( field ) {
-    return bwconfig.fields[field].label;
+    return bookworm.fields[field].label;
 }
 
 // Check if something is defined
 function isDefined( variable ) {
-    return ( typeof variable != 'undefined' );
+    return ( typeof variable !== 'undefined' );
 }
 
 // Cribbed from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
-function getParameterByName(name) {
-    var def = (def != null) ? def : "";
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+function getParameterByName( name ) {
+    var def = ( def !== null ) ? def : "";
+    name = name.replace( /[\[]/, "\\[").replace( /[\]]/, "\\]");
+    var regex = new RegExp( "[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec( location.search );
+    return results === null ? "" : decodeURIComponent( results[1].replace( /\+/g, " "));
 }
 
 // Default Ajax Error Handler
 function logAjaxError( message ) {
-    console.log(message);
+    console.log( message );
 }

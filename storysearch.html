@@ -5,17 +5,10 @@ comments: false
 jquery: true
 bookwormjs: true
 ---
-
-<!--
-TODO:
-* Reuse Bookworm Analysis and Similar Stories displays from analyzer
-*
--->
-
         <style>
-ul.ui-autocomplete.ui-menu {
-    font-size: 75%;
-}
+            ul.ui-autocomplete.ui-menu {
+                font-size: 75%;
+            }
         </style>
 
         <div id="search">
@@ -33,86 +26,79 @@ ul.ui-autocomplete.ui-menu {
         <script>
             // Get query text
             var query = getParameterByName('q') || '';
-            var start = Number(getParameterByName('s')) || 0;
-            var current_page = Number(getParameterByName('p')) || 1;
-            // Default Pagination
-            var rows = 10;
-//             var mlt_count = 5;
-            var default_rows = 10;
-            var total_results = 0;
-            var total_pages = 0;
-            var current_page = 1;
+            var start = Number( getParameterByName('s')) || 0;
+            var rows = Number( getParameterByName('r')) || 10;
 
             // Controls what metrics are displayed.
-            var display_results = bwconfig.display_results;
+            var showMetrics = bookworm.display_results;
 
-            function displayAjaxError(thrownMessage) {
+            function displayAjaxError( thrownMessage ) {
                 // Update results stats
                 $('#searchStats').empty();
                 $('#searchStats').append(
                     "<p>Something went wrong. Please check your query and try again.</p>"
                 );
-                console.log(thrownMessage);
+                console.log( thrownMessage );
             }
 
             // Callback to show search results
-            function displayResults(data) {
+            function displayResults( data ) {
 
                 // Refresh Global Variables
-                start = Number( data.responseHeader.params.start ) || 0;
-                rows = Number( data.responseHeader.params.rows ) || 10;
-                query = data.responseHeader.params.q;
-                total_results = data.response.numFound;
-                total_pages = Math.ceil( total_results / rows );
-                current_page = Math.ceil( (start / rows) + 1 );
+                var resultsStart = Number( data.responseHeader.params.start );
+                var resultsRows = Number( data.responseHeader.params.rows );
+                var resultsQuery = data.responseHeader.params.q;
+                var resultsTotal = data.response.numFound || 0;
+                var totalPages = Math.ceil( resultsTotal / resultsRows ) || 0;
+                var currentPage = Math.ceil( ( resultsStart / resultsRows ) + 1 ) || 1;
 
                 // Range of results for current page
-                var page_begin = start + 1;
-                var page_end = ( (start + rows) < total_results) ? (start + rows) : total_results;
-
-                // Update results stats div
-                $('#searchStats').empty();
-                $('#searchStats').append(
-                    "Found " + data.response.numFound + " stories. Showing " + page_begin + "-" + page_end + "."
-                );
+                var pageBegin = resultsStart + 1;
+                var pageEnd = ( ( resultsStart + resultsRows ) < resultsTotal ) ?
+                    ( resultsStart + resultsRows ) :
+                    resultsTotal;
 
                 // Add results
-                var res_counter = start + 1;
                 $('#results').append("<hr />");
-                $.each(data.response.docs, function(index, doc) {
-                    var published_date = new Date(doc.pub_date);
+                $.each( data.response.docs, function( index, doc ) {
+                    // Make Published Date look nice
+                    var publishedDate = new Date( doc.pub_date )
+                        .toLocaleDateString('en-us', bookworm.date_options );
+                    // Number of item in full result set
+                    var itemNumber = pageBegin + index;
                     // Populate results div
                     $('#results').append(
-                        "<div class=\"result\" id=\"res-" + res_counter + "\"><h3>" +
-                        res_counter + ".&nbsp;" +
+                        "<div class=\"result\" id=\"res-" + itemNumber + "\"><h3>" +
+                        itemNumber + ".&nbsp;" +
                         doc.magazine + " >> <a href=\"" + doc.url + "\" target=\"story\">" +
                         doc.title + "</a></h3>" +
                         "<p class=\"font-75\">By " + doc.author.join(", ") + "<br />" +
-                        "Published " + published_date.toLocaleDateString('en-us', bwconfig.date_options) + "<br />" +
-                        "Search Relevance: " + doc.score +
+                        "Published " + publishedDate + "<br />" +
+//                         "Search Relevance: " + doc.score +
                         "</p>" +
-                        "<div class=\"accordion font-62\" id=\"det-" + res_counter + "\">"+
+                        "<div class=\"accordion font-62\" id=\"det-" + itemNumber + "\">"+
                         '<h3>Bookworm Analysis</h3>' +
                         '<table class="scrollTable" id="analysisTable">' +
                         '<thead><tr><td>Metric</td><td>Value</td></tr></thead>' +
-                        '<tbody id="analysisTableBody-' + res_counter + '"></tbody>' +
+                        '<tbody id="analysisTableBody-' + itemNumber + '"></tbody>' +
                         '</table>' +
                         '<h3>Top ' + data.moreLikeThis[doc.url].docs.length + ' Similar Stories</h3>' +
                         '<table class="scrollTable" id="mltTable">' +
                         '<thead><tr><td>Title</td><td>Author</td><td>Magazine</td><td>Published</td></tr></thead>'+
-                        '<tbody id="mltTableBody-' + res_counter + '"></tbody>' +
+                        '<tbody id="mltTableBody-' + itemNumber + '"></tbody>' +
                         '</table>' +
                         "</div>"+
                         "<hr />"
                     );
-                    populateAnalysisTableBody('#analysisTableBody-' + res_counter, display_results, doc);
-                    populateMltTableBody('#mltTableBody-' + res_counter, data.moreLikeThis[doc.url].docs);
-                    res_counter += 1;
+                    populateAnalysisTableBody('#analysisTableBody-' + itemNumber,
+                        showMetrics, doc );
+                    populateMltTableBody('#mltTableBody-' + itemNumber,
+                        data.moreLikeThis[doc.url].docs );
                 });
 
                 // Collapse all accordions.
                 $( "div.accordion" ).each( function() {
-                    $(this).accordion({
+                    $( this ).accordion({
                         active: null,
                         collapsible: true,
                         animate: 50,
@@ -121,40 +107,51 @@ ul.ui-autocomplete.ui-menu {
 
                 // Refresh pagination
                 $('.sync-pagination').twbsPagination({
-                    totalPages: total_pages,
-                    startPage:  current_page,
-                    onPageClick: function (event, page) {
-                        new_start = (page - 1) * rows;
+                    totalPages: totalPages,
+                    startPage:  currentPage,
+                    onPageClick: function ( event, page ) {
+                        var new_start = ( page - 1 ) * rows;
                         window.location.href = '?q=' + query +
                             "&s=" + new_start;
                     }
                 });
 
+                // Update results stats div
+                $('#searchStats').empty();
+                $('#searchStats').append(
+                    "Found " + data.response.numFound + " stories. Showing " +
+                    pageBegin + "-" + pageEnd + "."
+                );
+
+                // Show result set
+                $('#results').show();
             }
 
             // Common Search
-            function searchStories(query,start,rows,callback) {
-                // Wipe out prior results
+            function searchStories( query, start, rows, callback ) {
+                // Wipe out prior results and hide
                 $('#results').empty();
-                solrSearchText(query, start, rows, callback, displayAjaxError);
+                $('#results').hide();
+                // Invoke Search
+                solrSearchText( query, start, rows, showMetrics, callback, displayAjaxError );
             }
 
             // Hook enter to search
-            $('body').keypress(function(e) {
-                if (e.keyCode == '13') {
-                    query = $('#searchText').val();
+            $('body').keypress( function( e ) {
+                if ( e.keyCode === 13 ) {
+                    var query = $('#searchText').val();
                     window.location.href = '?q=' + query;
                 }
             });
 
             // Perform the search if ready
-            $(document).ready(function () {
+            $( document ).ready( function () {
                 // Perform search if need
-                if (query != null && query != '') {
-                    $('#searchText').val(query);
+                if ( query ) {
+                    $('#searchText').val( query );
                     $('#searchStats').empty();
                     $('#searchStats').append("Searching...");
-                    searchStories(query, start, rows, displayResults);
+                    searchStories( query, start, rows, displayResults );
                 }
 
                 // Bind autocomplete to input
@@ -168,7 +165,7 @@ ul.ui-autocomplete.ui-menu {
                     })
                     .autocomplete({
                         minLength: 3,
-                        source: function(request, response) {
+                        source: function( request, response ) {
                             var search_text = request.term.replace('"', '')
                             var all_terms = search_text.split( /\s+/ );
                             var term = all_terms.pop();
@@ -183,12 +180,16 @@ ul.ui-autocomplete.ui-menu {
                                 fl: 'title',
                                 rows: 0,
                             }
-                            solrSearch(params, function( data ) {
+                            solrSearch( params, function( data ) {
                                 var terms = [];
-                                for (i = 0; i < data.facet_counts.facet_fields.text.length; i += 2) {
-                                    terms.push(all_terms.join(" ") + " " + data.facet_counts.facet_fields.text[i]);
+                                // Need to step by 2. Faceting also returns the count
+                                // of each term. (i.e. [ "term", 5 , "term2", 4, ...] )
+                                for ( i = 0; i < data.facet_counts.facet_fields.text.length;
+                                        i += 2 ) {
+                                    terms.push( ( all_terms.join(" ") + " "
+                                        + data.facet_counts.facet_fields.text[i] ).trim() );
                                 }
-                                response(terms);
+                                response( terms );
                             });
                         },
                         focus: function() {

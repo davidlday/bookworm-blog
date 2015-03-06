@@ -28,7 +28,7 @@ TODO:
 
         <script>
 
-            var display_results = bwconfig.display_results;
+            var display_results = bookworm.display_results;
             var loaded = [];
             var magazine_list = [];
             var magazine_datatable;
@@ -42,16 +42,17 @@ TODO:
                 var selected_magazine = $('#magazines-select').val();
 
                 $.each( display_results, function( metric_index, metric ) {
-                    if ($.inArray(selected_magazine, magazine_list) == -1) {
+                    if ($.inArray(selected_magazine, magazine_list) === -1) {
                         drawAllData( metric );
                     } else {
                         var dataset = [];
                         var options = getFlotChartOptions( metric );
                         $.each( datasets[metric], function( key, val ) {
-                            if (key == selected_magazine) {
+                            if (key === selected_magazine) {
                                 dataset.push(val);
                             }
                         });
+                        options.legend.show = false;
                         charts[metric] = $.plot('#histogram_' + metric, dataset, options);
                     }
                 });
@@ -64,6 +65,7 @@ TODO:
                     dataset.push(val);
                 });
                 options = getFlotChartOptions( metric );
+                options.legend.show = true;
                 charts[metric] = $.plot('#histogram_' + metric, dataset, options);
             }
 
@@ -88,7 +90,7 @@ TODO:
 
                 // Make sure all magazines have been processed before drawing.
                 loaded[data.metric]++;
-                if ( loaded[data.metric] == magazine_list.length ) {
+                if ( loaded[data.metric] === magazine_list.length ) {
                     drawAllData( data.metric );
                 }
 
@@ -115,11 +117,16 @@ TODO:
 
                     // Selection handler - zooms in on a selected section
                     $( '#' + div_name ).bind("plotselected", function (event, ranges) {
-                        $("#selection").text(ranges.xaxis.from.toFixed(1) + " to " + ranges.xaxis.to.toFixed(1));
+//                         $("#selection").text(ranges.xaxis.from.toFixed(1) + " to " + ranges.xaxis.to.toFixed(1));
                         $.each(charts[metric].getXAxes(), function(_, axis) {
                             var opts = axis.options;
                             opts.min = ranges.xaxis.from;
                             opts.max = ranges.xaxis.to;
+                        });
+                        $.each(charts[metric].getYAxes(), function(_, axis) {
+                            var opts = axis.options;
+                            opts.min = ranges.yaxis.from;
+                            opts.max = ranges.yaxis.to;
                         });
                         charts[metric].setupGrid();
                         charts[metric].draw();
@@ -129,6 +136,11 @@ TODO:
                     // Reset handler - double click returns graph to full
                     $( '#' + div_name ).dblclick( function (event) {
                             $.each(charts[metric].getXAxes(), function(_, axis) {
+                                var opts = axis.options;
+                                opts.min = null;
+                                opts.max = null;
+                            });
+                            $.each(charts[metric].getYAxes(), function(_, axis) {
                                 var opts = axis.options;
                                 opts.min = null;
                                 opts.max = null;
@@ -157,7 +169,7 @@ TODO:
             $(document).ready( function() {
                 solrGetMagazines( function( magazines ) {
                     $.each( magazines, function( index, magazine ) {
-                        if ($.inArray(magazine.name, magazine_list) == -1) {
+                        if ($.inArray(magazine.name, magazine_list) === -1) {
                             magazine_list.push(magazine.name);
                             $( '#magazines-select' ).append(
                                 '<option>' + magazine.name + '</option>'
