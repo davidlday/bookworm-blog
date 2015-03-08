@@ -9,7 +9,7 @@
 
 
 // Cribbed from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
-bookworm.getParameterByName = function getParameterByName( name ) {
+bookworm.getParameterByName = function( name ) {
     var def = ( def !== null ) ? def : "";
     name = name.replace( /[\[]/, "\\[").replace( /[\]]/, "\\]");
     var regex = new RegExp( "[\\?&]" + name + "=([^&#]*)"),
@@ -221,167 +221,140 @@ bookworm.display_results = [
 // Solr Interface
 bookworm.solr = {
     // Search
-    srch: {
+    srchAjaxSettings: {
         url: 'http://bookworm.davidlday.com/public/scripts/storysearch.py',
-        solr_defaults: {
-
+        type: "GET",
+        crossDomain: true,
+        dataType: 'json',
+        data: {
+            'q.op': 'AND',
+            wt: 'json',
+            mlt: true,
+            'mlt.fl': 'text',
+            'mlt.count': 20,
+            'mlt.minwl': 3,
+            'mlt.maxqt': 50
         }
     },
     // General Search
-    search: function solrSearch( params, successCallback, errorCallback ) {
-        $.ajax( {type: "GET",
-            url: this.srch.url,
-            data: params,
-            crossDomain: true,
-            dataType: 'json',
-            success: function( data ) {
-                successCallback( data )
-            },
-            error: function ( xhr, ajaxOptions, thrownError ) {
-                errorCallback( thrownError );
-            },
-        });
-    },
-    // Convenience Search
-    searchText: function solrSearchText( txt, start, rows, fields, successCallback, errorCallback) {
-        var params = {
-            q: txt,
-            'q.op': 'AND',
-            wt: 'json',
-            fl: 'magazine,title,url,id,author,pub_date,score,' + fields.join(),
-            mlt: true,
-            'mlt.fl': this.mlt.fl,
-            'mlt.count': this.mlt.rows,
-            rows: rows,
-            start: start,
-        };
-        this.search( params, successCallback, errorCallback);
+    search: function( settings ) {
+        return $.ajax(
+            $.extend(
+                true,
+                {},
+                this.srchAjaxSettings,
+                settings
+            )
+        );
     },
     // More Like This
-    mlt: {
+    mltAjaxSettings: {
         url: 'http://bookworm.davidlday.com/public/scripts/storieslikethis.py',
-        fl: 'text',
-        minwl: 3,
-        maxqt: 50,
-        rows: 20,
-    },
-    moreLikeThis: function moreLikeThis( params, successCallback, errorCallback ) {
-        $.ajax( {type: "POST",
-            url: this.mlt.url,
-            crossDomain: true,
-            data: params,
-            dataType: 'json',
-            success: function( data ) {
-                successCallback( data.response.docs )
-            },
-            error: function ( xhr, ajaxOptions, thrownError ) {
-                errorCallback( thrownError );
-            },
-        });
-    },
-    moreLikeThisText: function moreLikeThisText( txt, successCallback, errorCallback ) {
-        var params = {
-            'stream.body': txt,
-            rows: this.mlt.rows,
+        type: "POST",
+        crossDomain: true,
+        data: {
+            rows: 20,
             'mlt.match.include': false,
             fl: '*,score',
             'mlt.interestingTerms': 'details',
-            'mlt.fl': this.mlt.fl,
-            'mlt.minwl': this.mlt.minwl,
-            'mlt.maxqt': this.mlt.maxqt,
-        };
-        this.moreLikeThis( params, successCallback, errorCallback );
+            'mlt.fl': 'text',
+            'mlt.minwl': 3,
+            'mlt.maxqt': 50,
+        },
+        dataType: 'json',
+    },
+    moreLikeThis: function( settings ) {
+        return $.ajax(
+            $.extend(
+                true,
+                {},
+                this.mltAjaxSettings,
+                settings
+            )
+         );
     },
     // Bookworm Specific
-    // Convenience List of Magazines w/ number of total stories
-    getMagazines: function getMagazines( successCallback, errorCallback ) {
-        var params = {
-            q: '*',
-            'q.op': 'AND',
-            wt: 'json',
-            fl: 'magazine',
-            sort: 'magazine asc',
-            group: true,
-            'group.field': 'magazine',
+    // Array of Magazines w/ number of total stories
+    getMagazines: function() {
+        var settings = {
+            data: {
+                q: '*',
+                fl: 'magazine',
+                mlt: false,
+                sort: 'magazine asc',
+                group: true,
+                'group.field': 'magazine'
+            }
         };
-        bookworm.solr.search( params, function( data ) {
-            var magazines = [];
-            $.each( data.grouped.magazine.groups, function( index, group ) {
-                magazines.push(
-                    {
-                        name: group.doclist.docs[0].magazine,
-                        totalStories: group.doclist.numFound,
-                    }
-                );
-            });
-            successCallback( magazines );
-        },
-        errorCallback );
+        return bookworm.solr.search( settings )
     },
-    // Convenience Binned Data for Magazine / Metric
-    getBinnedCounts: function getBinnedCounts( magazine, metric, successCallback, errorCallback ) {
+    // Create an array of Magazines w/ number of total stories
+    // from Solr Ajax response
+    magazinesFactory: function( data ) {
+        var magazine = []
+        // Populate magazine array
+        $.each( data.grouped.magazine.groups, function( index, group ) {
+            magazines.push(
+                {
+                    name: group.doclist.docs[0].magazine,
+                    totalStories: group.doclist.numFound,
+                }
+            );
+        });
+        return magazines;
+    },
+    // Binned Data for Magazine / Metric
+    getBinnedCounts: function( magazine, metric ) {
         // Test if we're grouping on numbers or text fields
         if ( bookworm.fields[metric].datatype === 'numeric') {
             var bin_formula = 'product($binsize,floor(div(' + metric + ',$binsize)))';
-            var params = {
-                q: 'magazine:"' + magazine + '"',
-                wt: 'json',
-                fl: 'magazine',
-                bin: bin_formula,
-                binsize: bookworm.fields[metric].binsize,
-                sort: '$bin asc',
-                group: true,
-                'group.func': '$bin',
-                rows: 9999999,
-            };
-            bookworm.solr.search( params, function( data ) {
-                var results = {
-                    magazine: magazine,
-                    metric: metric,
-                    bins: [],
+            var settings = {
+                data: {
+                    q: 'magazine:"' + magazine + '"',
+                    fl: 'magazine',
+                    bin: bin_formula,
+                    binsize: bookworm.fields[metric].binsize,
+                    sort: '$bin asc',
+                    group: true,
+                    'group.func': '$bin',
+                    rows: 9999999,
+                    mlt: false
                 }
-                $.each( data.grouped['$bin'].groups, function( index, group ) {
-                    results.bins.push(
-                        {
-                            bin: group.groupValue,
-                            count: group.doclist.numFound,
-                        }
-                    );
-                });
-                successCallback( results );
-            },
-            errorCallback );
+            };
+            return bookworm.solr.search( settings )
         } else {
-            var params = {
-                q: 'magazine:"' + magazine + '"',
-                wt: 'json',
-                fl: metric,
-                group: true,
-                'group.field': metric,
-                rows: 9999999,
-                sort: metric + ' asc',
-            };
-            bookworm.solr.search( params, function( data ) {
-                var groups = [];
-                var results = {
-                    magazine: magazine,
-                    metric: metric,
-                    bins: [],
+            var settings = {
+                data: {
+                    q: 'magazine:"' + magazine + '"',
+                    fl: metric,
+                    group: true,
+                    'group.field': metric,
+                    rows: 9999999,
+                    sort: metric + ' asc',
+                    mlt: false
                 }
-                $.each( data.grouped[metric].groups, function( index, group ) {
-                    results.bins.push(
-                        {
-                            bin: group.groupValue,
-                            count: group.doclist.numFound,
-                        }
-                    );
-                });
-                successCallback( results );
-            },
-            errorCallback );
+            };
+            return bookworm.solr.search( settings )
         }
+    },
+    // Create an object of binned data for Magazine / Metric.
+    binnedDataFactory: function( magazine, metric, data ) {
+        var results = {
+            magazine: magazine,
+            metric: metric,
+            bins: [],
+        },
+        bins = data.grouped.$bin || data.grouped[metric];
+        $.each( bins.groups, function( index, group ) {
+            results.bins.push(
+                {
+                    bin: group.groupValue,
+                    count: group.doclist.numFound,
+                }
+            );
+        });
+        return results;
     }
-
 }
 
 
@@ -390,7 +363,7 @@ bookworm.analyzer = {
     url: 'http://bookworm.davidlday.com/public/scripts/analyze.py',
     analyzeText: function analyzeText( txt, successCallback, errorCallback ) {
         var post_data = {'text': txt};
-        $.ajax( {
+        $.ajax({
             type: "POST",
             url: this.url,
             crossDomain: true,
@@ -479,9 +452,9 @@ bookworm.flot = {
         },
     },
     getChartOptions: function getFlotChartOptions( field ) {
-        var options = this.default_options;
+        var options = $.extend(true, {}, this.default_options);
         options.series.bars.barWidth = bookworm.fields[field].binsize * 0.8;
-        if ( bookworm.fields[field].datatype !== 'numeric') {
+        if ( bookworm.fields[field].datatype !== 'numeric' ) {
             options['xaxis'] = {
                 mode: 'categories',
             };

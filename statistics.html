@@ -58,21 +58,22 @@ TODO:
 
                     // For each magazine, load data and draw
                     $.each( magazines, function( index, magazine ) {
-                        bookworm.solr.getBinnedCounts(magazine.name,
-                            metric,
-                            function( data ) {
-                                // Add result to data;
-                                var series_data = [];
-                                $.each( data.bins, function(index, data) {
-                                    series_data.push( [data.bin, data.count] );
+                        bookworm.solr.getBinnedCounts(magazine.name, metric)
+                            .done( function( data ) {
+                                var results = bookworm.solr.binnedDataFactory( magazine.name,
+                                        metric, data ),
+                                    series_data = [];
+
+                                $.each( results.bins, function( index, result ) {
+                                    series_data.push( [result.bin, result.count] );
                                 });
 
                                 // Used to consistently order series across charts
                                 // and make coloring consistent
                                 var color_int = index;
 
-                                datasets[data.metric][data.magazine] = {
-                                    label: data.magazine,
+                                datasets[results.metric][results.magazine] = {
+                                    label: results.magazine,
                                     hoverable: true,
                                     clickable: true,
                                     color: color_int,
@@ -83,9 +84,6 @@ TODO:
                                 $( "#progressbar" ).progressbar( "option", "value",
                                     $( "#progressbar" ).progressbar( "option", "value" ) + 1
                                 );
-                            },
-                            function( message) {
-                                console.log( message );
                             });
                     });
                 });
@@ -153,42 +151,43 @@ TODO:
                         '<div id="' + div_name + '"></div>' +
                         '<hr />'
                     );
-                    $( '#' + div_name ).width( div_width );
-                    $( '#' + div_name ).height( div_height );
-
-                    // Selection handler - zooms in on a selected section
-                    $( '#' + div_name ).bind( 'plotselected', function ( event, ranges ) {
-                        $.each(charts[metric].getXAxes(), function( _, axis ) {
-                            opts = axis.options;
-                            opts.min = ranges.xaxis.from;
-                            opts.max = ranges.xaxis.to;
-                        });
-                        $.each(charts[metric].getYAxes(), function( _, axis ) {
-                            opts = axis.options;
-                            opts.min = ranges.yaxis.from;
-                            opts.max = ranges.yaxis.to;
-                        });
-                        charts[metric].setupGrid();
-                        charts[metric].draw();
-                        charts[metric].clearSelection();
-                    });
-
-                    // Reset handler - double click returns graph to full
-                    $( '#' + div_name ).dblclick( function ( event ) {
+                    // Setup chart div
+                    $( '#' + div_name )
+                        // Size it
+                        .width( div_width )
+                        .height( div_height )
+                        // Set Selection handler - zooms in on a selected section
+                        .bind( 'plotselected', function ( event, ranges ) {
                             $.each(charts[metric].getXAxes(), function( _, axis ) {
                                 opts = axis.options;
-                                opts.min = null;
-                                opts.max = null;
+                                opts.min = ranges.xaxis.from;
+                                opts.max = ranges.xaxis.to;
                             });
                             $.each(charts[metric].getYAxes(), function( _, axis ) {
                                 opts = axis.options;
-                                opts.min = null;
-                                opts.max = null;
+                                opts.min = ranges.yaxis.from;
+                                opts.max = ranges.yaxis.to;
                             });
                             charts[metric].setupGrid();
                             charts[metric].draw();
                             charts[metric].clearSelection();
-                    });
+                        })
+                        // Set Reset handler - double click returns graph to full
+                        .dblclick( function ( event ) {
+                                $.each(charts[metric].getXAxes(), function( _, axis ) {
+                                    opts = axis.options;
+                                    opts.min = null;
+                                    opts.max = null;
+                                });
+                                $.each(charts[metric].getYAxes(), function( _, axis ) {
+                                    opts = axis.options;
+                                    opts.min = null;
+                                    opts.max = null;
+                                });
+                                charts[metric].setupGrid();
+                                charts[metric].draw();
+                                charts[metric].clearSelection();
+                        });
 
                     // Get dataset and options
                     dataset = [];
@@ -205,40 +204,37 @@ TODO:
             // Start the whole process
             $( document ).ready( function() {
                 $( '#dashboard' ).hide();
-                bookworm.solr.getMagazines( function( data ) {
-                    var magazines = data;
-                        totalCalls = magazines.length * showMetrics.length,
-                        progressbar = $( "#progressbar" ),
-                        progressLabel = $( ".progress-label" );
+                bookworm.solr.getMagazines()
+                    .done( function( data ) {
+                        var magazines = bookworm.solr.magazinesFactory( data ),
+                            totalCalls = magazines.length * showMetrics.length,
+                            progressbar = $( "#progressbar" ),
+                            progressLabel = $( ".progress-label" );
 
-                    // Populate magazine select options
-                    $.each( magazines, function( index, magazine ) {
+                        $.each( magazines , function( index, magazine ) {
                             $( '#magazines-select' ).append(
                                 '<option value="' + magazine.name + '">' +
                                 magazine.name +
                                 ' (' + magazine.totalStories + ' stories) </option>'
                             );
+                        });
+                        // Setup the Progress Bar
+                        progressbar.progressbar({
+                            max: totalCalls,
+                            value: false,
+                            change: function() {
+                                progressLabel.text(
+                                    ( Math.floor(
+                                        progressbar.progressbar( "value" ) / totalCalls * 100)
+                                    ) + "%"
+                                );
+                            },
+                            complete: function() {
+                                progressLabel.text( "Complete!" );
+                            }
+                        });
+                        loadDataSets( magazines );
                     });
-
-                    // Setup the Progress Bar
-                    progressbar.progressbar({
-                        max: totalCalls,
-                        value: false,
-                        change: function() {
-                            progressLabel.text(
-                                ( Math.floor(
-                                    progressbar.progressbar( "value" ) / totalCalls * 100)
-                                ) + "%"
-                            );
-                        },
-                        complete: function() {
-                            progressLabel.text( "Complete!" );
-                        }
-                    });
-                    loadDataSets( magazines );
-                }, function( message ) {
-                    console.log( message );
-                });
                 $( '#magazines-select' ).on( 'change', loadSelectedMagazine );
             })
             .ajaxStop( function() {

@@ -80,9 +80,12 @@ bookwormjs: true
                 // Make sure there's text and run analysis
                 var story = $('#storyText').val();
                 if (story != null && story != '') {
-//                     analyzeText(story, displayAnalysis, displayAjaxError);
                     bookworm.analyzer.analyzeText(story, displayAnalysis, displayAjaxError);
-                    bookworm.solr.moreLikeThisText(story, displaySimilarStories, displayAjaxError);
+                    bookworm.solr.moreLikeThis({
+                        data: { 'stream.body': story }
+                    })
+                        .done( displaySimilarStories )
+                        .fail( displayAjaxError);
                 }
             }
 
@@ -129,7 +132,7 @@ bookwormjs: true
 
             // Show similar stories
             function displaySimilarStories(data) {
-                bookworm.ui.populateMltTableBody('#mltTableBody', data);
+                bookworm.ui.populateMltTableBody('#mltTableBody', data.response.docs);
             }
 
             // Log Ajax Error

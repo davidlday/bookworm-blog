@@ -130,16 +130,6 @@ bookwormjs: true
                 $('#results').show();
             }
 
-            // Common Search
-            function searchStories( query, start, rows, callback ) {
-                // Wipe out prior results and hide
-                $('#results').empty();
-                $('#results').hide();
-                // Invoke Search
-                bookworm.solr.searchText( query, start, rows, showMetrics,
-                    callback, displayAjaxError );
-            }
-
             // Hook enter to search
             $('body').keypress( function( e ) {
                 if ( e.keyCode === 13 ) {
@@ -155,7 +145,20 @@ bookwormjs: true
                     $('#searchText').val( query );
                     $('#searchStats').empty();
                     $('#searchStats').append("Searching...");
-                    searchStories( query, start, rows, displayResults );
+//                     searchStories( query, start, rows, displayResults );
+                    bookworm.solr.search({
+                        data: {
+                            q: query,
+                            start: start,
+                            rows: rows,
+                            fl: 'magazine,title,url,id,author,pub_date,score,' + showMetrics.join()
+                        },
+                    })
+                        .done( displayResults );
+//                         .fail( function( jqXHR, textStatus, errorThrown ) {
+//                             console.log( textStatus + ": " + errorThrown );
+//                         });
+
                 }
 
                 // Bind autocomplete to input
@@ -172,28 +175,30 @@ bookwormjs: true
                         var search_text = request.term.replace('"', '')
                         var all_terms = search_text.split( /\s+/ );
                         var term = all_terms.pop();
-                        var params = {
-                            q: search_text + '*',
-                            'q.op': 'AND',
-                            facet: true,
-                            'facet.field': 'text',
-                            'facet.prefix': term,
-                            'facet.mincount': 1,
-                            wt: 'json',
-                            fl: 'title',
-                            rows: 0,
-                        }
-                        bookworm.solr.search( params, function( data ) {
-                            var terms = [];
-                            // Need to step by 2. Faceting also returns the count
-                            // of each term. (i.e. [ "term1", 5 , "term2", 4, ...] )
-                            for ( i = 0; i < data.facet_counts.facet_fields.text.length;
-                                    i += 2 ) {
-                                terms.push( ( all_terms.join(" ") + " "
-                                    + data.facet_counts.facet_fields.text[i] ).trim() );
-                            }
-                            response( terms );
-                        });
+                        bookworm.solr.search({
+                            data: {
+                                q: search_text + '*',
+                                'q.op': 'AND',
+                                facet: true,
+                                'facet.field': 'text',
+                                'facet.prefix': term,
+                                'facet.mincount': 1,
+                                wt: 'json',
+                                fl: 'title',
+                                rows: 0,
+                            },
+                        })
+                            .done( function( data ) {
+                                var terms = [];
+                                // Need to step by 2. Faceting also returns the count
+                                // of each term. (i.e. [ "term1", 5 , "term2", 4, ...] )
+                                for ( i = 0; i < data.facet_counts.facet_fields.text.length;
+                                        i += 2 ) {
+                                    terms.push( ( all_terms.join(" ") + " "
+                                        + data.facet_counts.facet_fields.text[i] ).trim() );
+                                }
+                                response( terms );
+                            });
                     },
                     focus: function() {
                         // prevent value inserted on focus
