@@ -44,11 +44,12 @@ TODO:
 
         <script>
             // Page Globals
-            var showMetrics = bookworm.display_results;
-            var magazines = [];
-            var datasets = {};
-            var charts = {};
-            var chartoptions = {};
+            var showMetrics = bookworm.display_results,
+                magazines = [],
+                datasets = {},
+                charts = {},
+                chartoptions = {};
+
 
             // Retrieve all datasets
             function loadDataSets( magazines ) {
@@ -58,10 +59,9 @@ TODO:
 
                     // For each magazine, load data and draw
                     $.each( magazines, function( index, magazine ) {
-                        bookworm.solr.getBinnedCounts(magazine.name, metric)
+                        bookworm.solr.getBinnedData(magazine.name, metric)
                             .done( function( data ) {
-                                var results = bookworm.solr.binnedDataFactory( magazine.name,
-                                        metric, data ),
+                                var results = bookworm.solr.binnedDataFactory( data ),
                                     series_data = [];
 
                                 $.each( results.bins, function( index, result ) {
@@ -147,7 +147,7 @@ TODO:
                     // Add div for the chart
                     $( '#dashboard' ).append(
                         '<h3 class="text-center">' +
-                        bookworm.fields.getFieldLabel( metric ) + '</h3>' +
+                        bookworm.getFieldLabel( metric ) + '</h3>' +
                         '<div id="' + div_name + '"></div>' +
                         '<hr />'
                     );

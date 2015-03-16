@@ -7,28 +7,9 @@
 
 "use strict";
 
-
-// Cribbed from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
-bookworm.getParameterByName = function( name ) {
-    var def = ( def !== null ) ? def : "";
-    name = name.replace( /[\[]/, "\\[").replace( /[\]]/, "\\]");
-    var regex = new RegExp( "[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec( location.search );
-    return results === null ? "" : decodeURIComponent( results[1].replace( /\+/g, " "));
-}
-
-
-// Date display options
-bookworm.date_options = {
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-};
-
-
-// Field Definitions
+// Fields available in Solr
 // Maybe extract this from Solr
-bookworm.fields = {
+var fields = {
     url: {
         label: "Story URL",
         multivalue: false,
@@ -191,10 +172,60 @@ bookworm.fields = {
         binsize: 250,
         datatype: 'numeric',
     },
-    // Return the text label for a bookworm field
-    getFieldLabel: function getFieldLabel( field ) {
-        return bookworm.fields[field].label;
+};
+
+
+// High-Level Functions
+// Cribbed from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+bookworm.getParameterByName = function( name ) {
+    var def = ( def !== null ) ? def : "";
+    name = name.replace( /[\[]/, "\\[").replace( /[\]]/, "\\]");
+    var regex = new RegExp( "[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec( location.search );
+    return results === null ? "" : decodeURIComponent( results[1].replace( /\+/g, " "));
+};
+
+// Return a full field definition
+bookworm.getField = function( field ) {
+    return fields[field];
+};
+
+// Return the text label for a bookworm field
+bookworm.getFieldLabel = function( field ) {
+    return fields[field].label;
+};
+
+// Return the full field definition object
+bookworm.getFields = function() {
+    return fields;
+};
+
+// Return a list of numeric fields
+bookworm.getNumericFieldKeys = function() {
+    var numericFields = [];
+    $.each( fields, function( key, val ) {
+        if ( val.datatype === 'numeric' ) {
+            numericFields.push( key );
+        }
+    });
+    return numericFields;
+};
+
+// Because JavaScript doesn't have a stinking mean function
+bookworm.mean = function( array ) {
+    var total = 0
+    for (var i = 0; i < array.length; i++) {
+        total += array[i];
     }
+    return total / array.length;
+}
+
+
+// Date display options
+bookworm.date_options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
 };
 
 
@@ -208,20 +239,19 @@ bookworm.display_results = [
     'dialogue_word_percentage',
     'pov',
     'coleman_liau_index',
-//         'automated_readability_index',
-//         'flesch_kincaid_grade_level',
-//         'smog_index',
-//         'flesch_reading_ease',
-//         'gunning_fog_index',
-//         'rix',
-//         'lix',
+    'automated_readability_index',
+    'flesch_kincaid_grade_level',
+//     'flesch_reading_ease',
+    'smog_index',
+    'gunning_fog_index',
+    'rix',
+    'lix',
 ];
-
 
 // Solr Interface
 bookworm.solr = {
-    // Search
-    srchAjaxSettings: {
+    // Default Search settings
+    searchAjaxSettings: {
         url: 'http://bookworm.davidlday.com/public/scripts/storysearch.py',
         type: "GET",
         crossDomain: true,
@@ -242,12 +272,12 @@ bookworm.solr = {
             $.extend(
                 true,
                 {},
-                this.srchAjaxSettings,
+                this.searchAjaxSettings,
                 settings
             )
         );
     },
-    // More Like This
+    // Default More Like This settings
     mltAjaxSettings: {
         url: 'http://bookworm.davidlday.com/public/scripts/storieslikethis.py',
         type: "POST",
@@ -263,6 +293,7 @@ bookworm.solr = {
         },
         dataType: 'json',
     },
+    // More Like This Handler
     moreLikeThis: function( settings ) {
         return $.ajax(
             $.extend(
@@ -291,29 +322,60 @@ bookworm.solr = {
     // Create an array of Magazines w/ number of total stories
     // from Solr Ajax response
     magazinesFactory: function( data ) {
-        var magazine = []
+        var magazines = []
         // Populate magazine array
         $.each( data.grouped.magazine.groups, function( index, group ) {
+            var magazine_name = group.doclist.docs[0].magazine,
+                magazine_id = magazine_name.replace(/[\s\.]/g,'_').toLowerCase();
             magazines.push(
                 {
-                    name: group.doclist.docs[0].magazine,
+                    name: magazine_name,
+                    id: magazine_id,
                     totalStories: group.doclist.numFound,
                 }
             );
         });
         return magazines;
     },
+    // Statistics of all numeric fields for a magazine
+    getMagazineStatistics: function( magazine ) {
+        var settings = {
+            // Needed to explode stats.field into
+            // multiple parameters when passed
+            traditional: true,
+            data: {
+                bwmagazine: magazine,
+                q: 'magazine:"' + magazine + '"',
+                stats: true,
+                rows: 1,
+                'stats.field': bookworm.getNumericFieldKeys(),
+            }
+        };
+        return bookworm.solr.search( settings );
+    },
+    // Create an array of magazine statistics
+    // from Solr Ajax response
+    magazineStatisticsFactory: function( data ) {
+        var results = {
+            magazine: data.responseHeader.params.bwmagazine,
+            totalStories: data.response.numFound,
+            stats: data.stats.stats_fields
+        }
+        return results;
+    },
     // Binned Data for Magazine / Metric
-    getBinnedCounts: function( magazine, metric ) {
+    getBinnedData: function( magazine, metric ) {
         // Test if we're grouping on numbers or text fields
-        if ( bookworm.fields[metric].datatype === 'numeric') {
+        if ( fields[metric].datatype === 'numeric') {
             var bin_formula = 'product($binsize,floor(div(' + metric + ',$binsize)))';
             var settings = {
                 data: {
+                    bwmetric: metric,
+                    bwmagazine: magazine,
                     q: 'magazine:"' + magazine + '"',
                     fl: 'magazine',
                     bin: bin_formula,
-                    binsize: bookworm.fields[metric].binsize,
+                    binsize: fields[metric].binsize,
                     sort: '$bin asc',
                     group: true,
                     'group.func': '$bin',
@@ -325,6 +387,8 @@ bookworm.solr = {
         } else {
             var settings = {
                 data: {
+                    bwmetric: metric,
+                    bwmagazine: magazine,
                     q: 'magazine:"' + magazine + '"',
                     fl: metric,
                     group: true,
@@ -338,13 +402,14 @@ bookworm.solr = {
         }
     },
     // Create an object of binned data for Magazine / Metric.
-    binnedDataFactory: function( magazine, metric, data ) {
-        var results = {
-            magazine: magazine,
-            metric: metric,
-            bins: [],
-        },
-        bins = data.grouped.$bin || data.grouped[metric];
+    binnedDataFactory: function( data ) {
+        var metric = data.responseHeader.params.bwmetric,
+            results = {
+                magazine: data.responseHeader.params.bwmagazine,
+                metric: metric,
+                bins: [],
+            },
+            bins = data.grouped.$bin || data.grouped[metric];
         $.each( bins.groups, function( index, group ) {
             results.bins.push(
                 {
@@ -361,28 +426,25 @@ bookworm.solr = {
 // Analyzer
 bookworm.analyzer = {
     url: 'http://bookworm.davidlday.com/public/scripts/analyze.py',
-    analyzeText: function analyzeText( txt, successCallback, errorCallback ) {
-        var post_data = {'text': txt};
-        $.ajax({
+    analyzeText: function analyzeText( txt ) {
+        return $.ajax({
             type: "POST",
             url: this.url,
             crossDomain: true,
-            data: post_data,
+            data: {'text': txt},
             dataType: 'json',
-            success: function( data ) {
-                successCallback( data );
-            },
-            error: function ( xhr, ajaxOptions, thrownError ) {
-                errorCallback( thrownError );
-            },
         });
+    },
+    analysisResultsFactory: function( data ) {
+        var results = {};
+        return $.extend( {}, results, data );
     }
 }
 
 // User Interface
 bookworm.ui = {
     // Add stories to mlt table body
-    populateMltTableBody: function populateMltTableBody( mltTableBody, docs ) {
+    populateMltTableBody: function( mltTableBody, docs ) {
         $.each( docs, function( index, doc ) {
             var published_date = new Date( doc.pub_date );
             $( mltTableBody ).append(
@@ -396,7 +458,7 @@ bookworm.ui = {
         });
     },
     // Add metrics to analysis table body
-    populateAnalysisTableBody: function populateAnalysisTableBody( analysisTableBody,
+    populateAnalysisTableBody: function( analysisTableBody,
             display_metrics, data ) {
         // Add results to summary table
         $.each( display_metrics, function( index, metric ) {
@@ -411,14 +473,44 @@ bookworm.ui = {
             }
             $( analysisTableBody ).append(
                 "<tr id=\"" + metric + "\">" +
-                "<td>" + bookworm.fields.getFieldLabel( metric ) + "</td>" +
+                "<td>" + bookworm.getFieldLabel( metric ) + "</td>" +
                 "<td class=\"text-right\">" + formatted_value + "</td>" +
                 "</tr>"
             );
         });
-    }
-
-
+    },
+    drawLineGauge: function( id, width, point, lrc ) {
+        // Dark Green: 006600
+        // Light Green: 33cc00
+        // Light Yellow: ffff00
+        // Dark Yellow: ffcc00
+        // Light Red: cc3300
+        // Dark Red: 990033
+        var gradients = {
+            left: 'l(0, 1, 1, 1)#006600-#33cc00-#ffff00-#ffcc00-#cc3300-#990033',
+            right: 'l(0, 1, 1, 1)#990033-#cc3300-#ffcc00-#ffff00-#33cc00-#006600',
+            center: 'l(0, 1, 1, 1)#990033-#cc3300-#ffcc00-#ffff00-#33cc00-#006600-#33cc00-#ffff00-#ffcc00-#cc3300-#990033',
+        };
+        lrc = lrc || 'left';
+        var s = Snap( '#' + id ),
+            g = s.gradient(gradients[lrc]),
+            block = s.rect(0, 10, width, 10).attr({
+                fill: g,
+                stroke: "#000",
+                strokeWidth: 0
+            });
+        var arrow = s.polygon( [
+                point - 10, 25,
+                point, 15,
+                point - 10, 5,
+                point + 10, 5,
+                point, 15,
+                point + 10, 25,
+                ] )
+            .attr({
+                fill: 'black'
+            });
+    },
 
 };
 
@@ -451,17 +543,32 @@ bookworm.flot = {
             sorted: 'ascending',
         },
     },
-    getChartOptions: function getFlotChartOptions( field ) {
+    getChartOptions: function( field ) {
         var options = $.extend(true, {}, this.default_options);
-        options.series.bars.barWidth = bookworm.fields[field].binsize * 0.8;
-        if ( bookworm.fields[field].datatype !== 'numeric' ) {
+        options.series.bars.barWidth = fields[field].binsize * 0.8;
+        if ( fields[field].datatype !== 'numeric' ) {
             options['xaxis'] = {
                 mode: 'categories',
             };
         }
         return options;
+    },
+    // Generate a list of colors
+    // Cribbed from: http://colorswatches.info/web-safe-colors/
+    websafeColors: function( step ) {
+        var inc = step || 1;
+        var vals = ['00', '33', '66', '99', 'cc', 'ff'];
+        var len = vals.length;
+        var colors = [];
+        for (var r = 0; r < len; r += inc) {
+            for (var g = 0; g < len; g += inc) {
+                for (var b = 0; b < len; b += inc) {
+                    colors.push( '#' + vals[r] + vals[g] + vals[b] );
+                }
+            }
+        }
+        return colors;
     }
-
 }
 
 }( window.bookworm = window.bookworm || {}, jQuery ));

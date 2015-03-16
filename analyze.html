@@ -3,13 +3,15 @@ layout: page
 title: Analyzer
 comments: false
 jquery: true
+snapsvg: true
 bookwormjs: true
 ---
         <p>Use this form to analyze a piece of writing with the same algorithms I use.</p>
         <hr />
         <div id="caveats" class="accordion font-75">
-            <h3>Caveats</h3>
-            <div>
+            <h3>Stuff You Should Know</h3>
+            <table>
+                <tbody><tr><td>
                 <ul>
                     <li>Nothing from this form is saved anywhere.</li>
                     <li>Plain text only.</li>
@@ -17,16 +19,19 @@ bookwormjs: true
                     <li>Section separators (e.g. #) are ignored.</li>
                     <li>Paragraphs are separated by one or more line breaks (return). Multiple consecutive line breaks are considered as one.</li>
                     <li>The formulae for the readability scores vary across implementations. Scores here may not exactly match scores from another tool.</li>
+                    <li>The Market Comparison comapares measures to the statistics on each magazine.</li>
+                    <li>The Similar Stories are found using someting called Term Vectors, or frequency of interesting words.</li>
                 </ul>
-            </div>
+                </td></tr></tbody>
+            </table>
         </div>
         <hr />
-        <div id="story">
+        <div id="story" style="display: none;">
             <textarea id="storyText" class="storyText" placeholder="Paste story here..."></textarea>
             <button id="analyzeButton">Analyze</button>
         </div>
         <div id="results-message" style="display: none;">Running Bookworm analysis and searching for similar stories...</div>
-        <div id="results" class="accordion font-75" style="display: none;">
+        <div id="results" class="font-75" style="display: none;">
             <h3>Bookworm Analysis</h3>
             <table class="scrollTable" id="analysisTable">
                 <thead id="analysisTableHead">
@@ -35,15 +40,32 @@ bookwormjs: true
                         <td>Value</td>
                     </tr>
                 </thead>
-                <tbody id="analysisTableBody">
+                <tbody id="analysisTableBody" class="font-75">
                 </tbody>
             </table>
             <hr />
-            <h3>Market Comparison</h3>
-            <div id="marketComparison">
+            <h3>Market Gauge</h3>
+            <div id="marketComparison" class="accordion font-75" style="display: none;">
+                <p>Summary</p>
+                <table class="scrollTable" id="marketSummary">
+                    <tbody id="marketSummary-TableBody"></tbody>
+                </table>
             </div>
             <hr />
-            <h3>Similar Stories</h3>
+            <h3>Magazines with Stories in the Top Similar Stories</h3>
+            <table class="scrollTable" id="knnTable">
+                <thead id="knnTableHead" class="text-center">
+                    <tr>
+                        <td>Magazine</td>
+                        <td>Average Similarity Score</td>
+                        <td>Number of Similar Stories</td>
+                    </tr>
+                </thead>
+                <tbody id="knnTableBody" class="font-75">
+                </tbody>
+            </table>
+            <hr />
+            <h3 id="ss-title"></h3>
             <table class="scrollTable" id="mltTable">
                 <thead id="mltTableHead">
                     <tr>
@@ -53,77 +75,128 @@ bookwormjs: true
                         <td>Published</td>
                     </tr>
                 </thead>
-                <tbody id="mltTableBody">
+                <tbody id="mltTableBody" class="font-75">
                 </tbody>
             </table>
         </div>
 
         <script>
             // Controls what return values are displayed in the table.
-            var display_results = bookworm.display_results;
+            var showMetrics = bookworm.display_results,
+                magazines,
+                ssCount = 100,
+                ssMaxTerms = 20;
 
             // Search button
             $('#analyzeButton').click( analyzeStory );
 
             // Local function to analyze the story
             function analyzeStory() {
-                $('#mlt-message').show();
-                $('#mlt').hide();
                 $('#results-message').show();
                 $('#results').hide();
 
                 // Wipe out prior results
                 $('#analysisTableBody').empty();
                 $('#mltTableBody').empty();
-                $('#marketComparison').empty();
+                $('#knnTableBody').empty();
+                $('#marketSummary-TableBody').empty();
+                $.each( magazines, function( index, magazine ) {
+                    $('#' + magazine.id + '-TableBody').empty();
+                });
 
                 // Make sure there's text and run analysis
                 var story = $('#storyText').val();
                 if (story != null && story != '') {
-                    bookworm.analyzer.analyzeText(story, displayAnalysis, displayAjaxError);
-                    bookworm.solr.moreLikeThis({
-                        data: { 'stream.body': story }
-                    })
+                    var mltSettings = { data: {
+                        'stream.body': story,
+                        rows: ssCount,
+                        'mlt.maxqt': ssMaxTerms } };
+                    bookworm.analyzer.analyzeText( story )
+                        .done( displayAnalysis )
+                        .fail( displayAjaxError );
+                    bookworm.solr.moreLikeThis( mltSettings )
                         .done( displaySimilarStories )
                         .fail( displayAjaxError);
                 }
             }
 
             // Show analysis
-            function displayAnalysis(data) {
+            function displayAnalysis( data ) {
+                var analysisResults = bookworm.analyzer.analysisResultsFactory( data );
+
                 // Populate analysis results
-                bookworm.ui.populateAnalysisTableBody('#analysisTableBody', display_results, data);
+                bookworm.ui.populateAnalysisTableBody( '#analysisTableBody', showMetrics, data );
 
                 // Start of comparing work to market metrics
-//                 solrGetMagazines( function( magazines ) {
-//                     $.each( magazines, function( index, magazine ) {
-//                         var tblHead = '<table class="scrollTable" id="' +  magazine.name + '">' +
-//                             '<thead><tr><td colspan="0" class="text-center">' +  magazine.name + '</td></tr></thead>' +
-//                             '<tbody id="' + magazine.name + '-TableBody"></tbody>' +
-//                             '</table>';
-//                         $( '#marketComparison' ).append(
-//                             tblHead
-//                         );
-//
-//                         $.each(display_results, function(index, metric) {
-//                             if (typeof histogram_settings[metric] !== 'undefined') {
-//                                 solrGetBinnedMetric(magazine.name,
-//                                     metric,
-//                                     function( bindata ) {
-//
-//                                     },
-//                                     displayAjaxError);
-//                             }
-//                         });
-//                     });
-//                 }, displayAjaxError);
+                bookworm.solr.getMagazines()
+                    .done( function( data ) {
+                        var deviations = {};
 
-                // Collapse result accordions.
-//                 $( '#results' ).accordion({
-//                     active: 0,
-//                     collapsible: true,
-//                     animate: 50,
-//                 });
+                        $.each( magazines, function( index, magazine ) {
+                            deviations[magazine.id] = [];
+                            bookworm.solr.getMagazineStatistics( magazine.name )
+                                .done( function( data ) {
+                                    var magazineStatistics = bookworm.solr.magazineStatisticsFactory( data ),
+                                        tblBodyId = '#' + magazine.id + '-TableBody';
+                                    deviations[magazine.id] = [];
+
+                                    $.each( showMetrics, function( undefined, metric ) {
+                                        if ( magazineStatistics.stats[metric] ) {
+                                            var svgId = magazine.id + '-' + metric,
+                                                metricStats = magazineStatistics.stats[metric],
+                                                svgWidth = $( '#marketComparison' ).parent().width() * 0.9,
+                                                mean = metricStats.mean,
+                                                stdDev = metricStats.stddev,
+                                                dev = ( analysisResults[metric] - mean) / stdDev,
+                                                point;
+
+                                            // Keep the point from going off the charts
+                                            dev = dev > 3 ? 3 : dev;
+                                            point = ( svgWidth / 2 ) + (dev * (svgWidth / 6));
+                                            deviations[magazine.id].push( Math.abs( dev ) );
+
+                                            $( tblBodyId ).append(
+                                                '<tr><td class="text-center">' +
+                                                bookworm.getFieldLabel( metric ) +
+                                                '<br /><svg id="' + svgId +
+                                                '" height="30"></svg>' +
+                                                '</td></tr>'
+                                            );
+                                            $( '#' + svgId ).width( svgWidth );
+                                            bookworm.ui.drawLineGauge( svgId, svgWidth, point, 'center' );
+                                        }
+                                    });
+                                    // Add a bar to the summary table
+                                    var svgId = magazine.id + '-summary',
+                                        svgWidth = $( '#marketComparison' ).parent().width() * 0.9,
+                                        dev = bookworm.mean( deviations[magazine.id] ),
+                                        point;
+
+                                    // Keep the point from going off the charts
+                                    dev = dev > 3 ? 3 : dev;
+                                    point = svgWidth - (dev * (svgWidth / 3) )
+                                    deviations[magazine.id].push( dev );
+
+                                    $( '#marketSummary-TableBody' ).append(
+                                        '<tr><td class="text-center">' +
+                                        magazine.name + ' (' + magazine.totalStories +
+                                        ' stories)<br /><svg id="' + svgId +
+                                        '" height="30"></svg>' +
+                                        '</td></tr>'
+                                    );
+                                    $( '#' + svgId ).width( svgWidth );
+                                    bookworm.ui.drawLineGauge( svgId, svgWidth, point, 'right' );
+                                });
+                        });
+                        $( '#marketComparison' )
+                            .accordion({
+                                active: 0,
+                                collapsible: true,
+                                animate: 50,
+                            })
+                            .show();
+                    });
+
 
                 // Show the results div
                 $('#results-message').hide();
@@ -131,22 +204,74 @@ bookwormjs: true
             }
 
             // Show similar stories
-            function displaySimilarStories(data) {
-                bookworm.ui.populateMltTableBody('#mltTableBody', data.response.docs);
+            function displaySimilarStories( data ) {
+                var docs = data.response.docs,
+                    magazineCounts = {},
+                    magazineScores = [];
+                bookworm.ui.populateMltTableBody('#mltTableBody', docs);
+
+                $.each( magazines, function( index, magazine ) {
+                    var magazineDocs = $.grep( docs, function( e ) {
+                            return e.magazine === magazine.name;
+                        }),
+                        totalScores = 0,
+                        avgScore = 0;
+
+                    $.each( magazineDocs, function( index, magazineDoc ) {
+                        totalScores += magazineDoc.score;
+                    });
+                    avgScore = ( magazineDocs.length > 0 ) ?
+                        totalScores / magazineDocs.length :
+                        0;
+                    magazineScores.push( {
+                        magazine: magazine.name,
+                        totalScores: totalScores,
+                        avgScore: avgScore,
+                        totalStories: magazineDocs.length,
+                    } );
+                });
+                magazineScores.sort( function( a, b ) {
+                    return b.avgScore - a.avgScore;
+                });
+                $.each( magazineScores, function( index, magazineScore ) {
+                    $( '#knnTableBody' ).append(
+                        "<tr><td>" + magazineScore.magazine + "</td>" +
+                        "<td class=\"text-right\">" + magazineScore.avgScore.toFixed(3) + "</td>" +
+                        "<td class=\"text-right\">" + magazineScore.totalStories + "</td>" +
+                        "</tr>"
+                    );
+                });
             }
 
             // Log Ajax Error
-            function displayAjaxError(thrownMessage) {
+            function displayAjaxError( thrownMessage ) {
                 console.log(thrownMessage);
             }
 
             $( document ).ready( function() {
+                $( '#ss-title' ).append(
+                    'Top ' + ssCount + ' Similar Stories'
+                );
+                // Prep Market Comparison Tables
+                bookworm.solr.getMagazines()
+                    .done( function( data ) {
+                        magazines = bookworm.solr.magazinesFactory( data );
+                        $.each( magazines, function( index, magazine ) {
+                            $( '#marketComparison' ).append(
+                                '<p>' + magazine.name + '</p>' +
+                                '<table class="scrollTable" id="' +  magazine.id + '">' +
+                                '<tbody id="' + magazine.id + '-TableBody"></tbody>' +
+                                '</table>'
+                            );
+                        });
+                        $( '#story' ).show();
+                    });
                 // Collapse the caveats
-//                 $( '#caveats' ).accordion({
-//                     active: null,
-//                     collapsible: true,
-//                     animate: 50,
-//                 });
+                $( '#caveats' ).accordion({
+                    active: null,
+                    collapsible: true,
+                    animate: 50,
+                });
             });
 
         </script>

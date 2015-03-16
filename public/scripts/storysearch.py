@@ -11,9 +11,11 @@ results = '';
 
 fs = cgi.FieldStorage()
 
-params = {}
+params = []
 for key in fs:
-    params[key] = fs.getvalue(key)
+    for val in fs.getlist(key):
+        params.append( (key, val) )
+
 data = urllib.urlencode(params)
 request = urllib2.Request(solr_url, data)
 try:

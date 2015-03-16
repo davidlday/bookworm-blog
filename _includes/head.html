@@ -53,6 +53,11 @@
   <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.stack.js"></script>
   {% endif %}
 
+  {% if page.snapsvg %}
+  <!-- Snap SVG Javascript Library http://snapsvg.io/ -->
+  <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/snap.svg/0.3.0/snap.svg-min.js"></script>
+  {% endif %}
+
   {% if page.bookwormjs %}
   <!-- Bookworm library-->
   <link rel="stylesheet" href="{{ site.baseurl }}public/css/bookworm.css">
