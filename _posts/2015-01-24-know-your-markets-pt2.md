@@ -9,7 +9,7 @@ This is the second in a series of posts on using text analytics to understand th
 * [Part 1](/2015/01/19/know-your-markets-pt1/) covers the market as a whole.
 * [Part 2](/2015/01/24/know-your-markets-pt2/) breaks down the market by the magazines I was able to sample.
 * [Part 3](/2015/02/06/know-your-markets-pt3/) looks at what's missing, what's likely wrong, and what comes next for this experiment.
-* Raw Data (coming soon) for those who want to run their own analysis.
+* [Raw Data](http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&wt=csv&rows=99999999) in CSV form for those who want to run their own analysis.
 
 ---
 

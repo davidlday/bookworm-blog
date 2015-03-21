@@ -2,6 +2,7 @@
 layout: post
 title: A Few New Things
 comments: true
+noToc: true
 excerpt: I've added a few new things to the site, including a search engine that'll let you search through all the stories I've analyzed.
 ---
 I've added a few new interesting things to the site.

@@ -9,7 +9,7 @@ This is the third and last post in a series on my initial experiment in using te
 * [Part 1](/2015/01/19/know-your-markets-pt1/) covers the market as a whole.
 * [Part 2](/2015/01/24/know-your-markets-pt2/) breaks down the market by the magazines I was able to sample.
 * [Part 3](/2015/02/06/know-your-markets-pt3/) looks at what's missing, what's likely wrong, and what comes next for this experiment.
-* Raw Data (coming soon) for those who want to run their own analysis.
+* [Raw Data](http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&wt=csv&rows=99999999) in CSV form for those who want to run their own analysis.
 
 ---
 
@@ -138,7 +138,7 @@ I'll keep an eye out for more magazines to index and analyze. I'm open to sugges
 
 ## <a name="analyzer"></a>Analyzer
 
-Recognizing that readability scoring across tools is inconsistent, I've put up a simple [Analyzer](/analyze/) where anyone can come and run analysis on a piece using the same code I used in my analysis. Eventually I hope to marry this up with the live graphs to show where a story falls in comparison to the stories I've indexed. I'm still working out how best to visually show this, since I don't really like the idea of presenting numbers that imply grade levels and such.
+Recognizing that readability scoring across tools is inconsistent, I've put up a simple [Analyzer](/tools/analyze/) where anyone can come and run analysis on a piece using the same code I used in my analysis. Eventually I hope to marry this up with the live graphs to show where a story falls in comparison to the stories I've indexed. I'm still working out how best to visually show this, since I don't really like the idea of presenting numbers that imply grade levels and such.
 
 # The End. Or is it?
 
