@@ -34,6 +34,7 @@ TODO:
         </div>
         <div id="legend"></div>
         <div id="dashboard" style="display: none;">
+            <p>You can download the raw data in CSV form <a href="http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&wt=csv&rows=99999999">here</a> and do your own analysis.</p>
             <div id="selectors">
                 <label for="magazines-select" style="display: block; margin: 30px 0 0 0;">Select A Magazine</label>
                 <select name="magazines-select" id="magazines-select" class="font-62">
@@ -48,8 +49,7 @@ TODO:
             var showMetrics = bookworm.display_results,
                 magazines = [],
                 datasets = {},
-                charts = {},
-                chartoptions = {};
+                charts = {};
 
 
             // Retrieve all datasets
@@ -114,14 +114,13 @@ TODO:
 
 
             function loadAllMagazines() {
-                var dataset = [],
-                    options;
+                var dataset = [];
                 $.each( showMetrics, function( index, metric ) {
                     dataset = [];
                     $.each(datasets[metric], function(key, val) {
                         dataset.push(val);
                     });
-                    options = bookworm.flot.getChartOptions( metric );
+                    var options = bookworm.flot.getChartOptions( metric );
                     options.legend.show = true;
                     charts[metric] = $.plot('#chart_' + metric, dataset, options);
                 });
