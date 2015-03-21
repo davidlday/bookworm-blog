@@ -29,3 +29,8 @@ author:
 version:             0.0.1
 google_analytics:    UA-34915921-3
 
+# jekyll-toc-generator options
+# https://github.com/dafi/jekyll-toc-generator
+minItemsToShowToc:   0
+anchorPrefix:        toc-
+showToggleButton:    false
