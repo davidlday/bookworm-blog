@@ -22,11 +22,13 @@ comments: true
 * [Readability-Score.com](https://readability-score.com/)
 * [Gender Guesser](http://www.hackerfactor.com/GenderGuesser.php)
 
+[Top](#)
+
 -----
 
 # Measuring Fiction
 
-Here's a list of ways we can measure a work of fiction. Maybe they don't all apply, and maybe not in all situations, but it's starting point.
+Thoughts on how fiction can be measured. Maybe they don't all apply, and maybe not in all situations, but it's starting point.
 
 * The Basics
   * Syllable Count
@@ -44,5 +46,7 @@ Here's a list of ways we can measure a work of fiction. Maybe they don't all app
   * [Automated Readability Index](http://en.wikipedia.org/wiki/Automated_Readability_Index)
   * [Simple Measure of Gobbledygook](http://en.wikipedia.org/wiki/SMOG)
 * Sentiment Analysis
+
+[Top](#)
 
 -----

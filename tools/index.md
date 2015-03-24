@@ -1,17 +1,22 @@
 ---
 layout: page
 title: Tools - Overview
+noToc: true
 ---
-Some useful things I've put together.
+Some useful, experimental things I've put together.
 
-## Analyzer
+## Raw Data
 
-Compare a piece of writing to the stats on stories analyzed.
+{% include bwdownload.html %}
 
-## Statistics
+## [Analyzer]({{ site.baseurl }}tools/analyze/)
+
+Compares a piece of writing to the stats on stories analyzed.
+
+## [Statistics]({{ site.baseurl }}tools/statistics/)
 
 Live stats on the stories analyzed. You can see the sweet spots for language craft in each market.
 
-## Story Search
+## [Story Search]({{ site.baseurl }}tools/storysearch/)
 
-Search through all the stories I've analyzed.
+Search through all the stories analyzed.

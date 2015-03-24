@@ -38,6 +38,17 @@ It's a short list.
 
 My day job is as the database and business intelligence technology area leader at a major insurance company. You can visit my [LinkedIn profile](https://www.linkedin.com/in/dday376) to find out a little more about my technology work, although I haven't updated it since taking the technology architect role.
 
+
+[Top](#)
+
+-----
+
+## Contact Info
+
+If you're interested in learning more or would your site added to or removed from the analysis, drop me an email at:
+
+> bookworm (at) davidlday (dot) com
+
 [Top](#)
 
 -----

@@ -21,6 +21,9 @@ textarea.storyText {
 .text-right {
     text-align: right;
 }
+.font-bold {
+    font-weight: bold;
+}
 
 /*! Cribbed from http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.css
  * CDN: http://www.bootstrapcdn.com/

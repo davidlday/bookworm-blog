@@ -34,7 +34,13 @@ TODO:
         </div>
         <div id="legend"></div>
         <div id="dashboard" style="display: none;">
-            <p>You can download the raw data in CSV form <a href="http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&wt=csv&rows=99999999">here</a> and do your own analysis.</p>
+            {% include bwdownload.html %}
+            <p>Zooming:
+            <ol>
+                <li>Select an area on a chart to zoom in.</li>
+                <li>Double-click any area on a chart to reset to the original zoom level.</li>
+            </ol>
+            </p>
             <div id="selectors">
                 <label for="magazines-select" style="display: block; margin: 30px 0 0 0;">Select A Magazine</label>
                 <select name="magazines-select" id="magazines-select" class="font-62">

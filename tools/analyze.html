@@ -7,13 +7,23 @@ snapsvg: true
 bookwormjs: true
 noToc: true
 ---
-        <p>Use this form to analyze a piece of writing with the same algorithms I use.</p>
-        <p>You can download the raw data in CSV form <a href="http://bookworm.davidlday.com/public/scripts/storysearch.py?q=*&wt=csv&rows=99999">here</a>.</p>
+        <p>See how a story compares statistically to the magazines I've analyzed.</p>
+        {% include bwdownload.html %}
         <hr />
-        <div id="caveats" class="accordion font-75">
-            <h3>Stuff You Should Know</h3>
+        <div id="readme" class="accordion font-75">
+            <h3>README</h3>
             <table>
                 <tbody><tr><td>
+                <p>When you run the analyzer, you'll get the following four perspectives on the story:</p>
+                <p class="font-bold">Bookworm Analysis</p>
+                <p>This is a list of the raw metrics for the piece analyzed.</p>
+                <p class="font-bold">Market Gauge</p>
+                <p>This compares the raw metrics from the piece analyzed to the statistics for each market. The gauges show green, yellow, and red instead of numbers to emphasize the idea that the raw numbers are not the focus. The summary shows how statistically similar the piece is overall to each magazine, while gauges for individual metrics are shown under each magazine heading. The summary uses absolute values, so it runs red to green. The details for each magazine, however, puts green in the middle, because for an individual metric it's useful to know if the analyzed piece is above or below a market's mean value. There's no weighting used, meaning every metric is given equal footing, because I don't have enough data to know which, if any, are more important.</p>
+                <p class="font-bold">Magazines with Stories in the Top Similar Stories</p>
+                <p>This is a bit of statistical analysis called <a href="http://opensourceconnections.com/blog/2013/09/30/easy-k-nn-document-classification-with-solr-and-python/" target="_blank">k-nearest neighbors</a>. Looking at a set of similar stories and seeing which magazines they represent gives us another way of figuring out which market(s) a story might fit in. How are the similar stories selected? Great question. That brings us to the last perspective...</p>
+                <p class="font-bold ss-title"></p>
+                <p>This is accomplished through a bit of search engine voodoo. It's based on something called Term Vectors, which is a fancy way of saying the number of times each word appears in a story. It doesn't look at all words, though, but rather selects what are considered Interesting Terms. I still don't understand the process well enough to explain it, but it's a widely used approach to finding similar documents around the web. If you interested in learning more, see the Solr documentation for the <a href="https://wiki.apache.org/solr/MoreLikeThisHandler" target="_blank">More Like This Handler</a>.</p>
+                <p class="font-bold">General Notes</p>
                 <ul>
                     <li>Nothing from this form is saved anywhere.</li>
                     <li>Plain text only.</li>
@@ -21,8 +31,6 @@ noToc: true
                     <li>Section separators (e.g. #) are ignored.</li>
                     <li>Paragraphs are separated by one or more line breaks (return). Multiple consecutive line breaks are considered as one.</li>
                     <li>The formulae for the readability scores vary across implementations. Scores here may not exactly match scores from another tool.</li>
-                    <li>The Market Comparison comapares measures to the statistics on each magazine.</li>
-                    <li>The Similar Stories are found using someting called Term Vectors, or frequency of interesting words.</li>
                 </ul>
                 </td></tr></tbody>
             </table>
@@ -67,7 +75,7 @@ noToc: true
                 </tbody>
             </table>
             <hr />
-            <h3 id="ss-title"></h3>
+            <h3 id="ss-title" class="ss-title"></h3>
             <table class="scrollTable" id="mltTable">
                 <thead id="mltTableHead">
                     <tr>
@@ -251,7 +259,7 @@ noToc: true
             }
 
             $( document ).ready( function() {
-                $( '#ss-title' ).append(
+                $( '.ss-title' ).append(
                     'Top ' + ssCount + ' Similar Stories'
                 );
                 // Prep Market Comparison Tables
@@ -268,8 +276,8 @@ noToc: true
                         });
                         $( '#story' ).show();
                     });
-                // Collapse the caveats
-                $( '#caveats' ).accordion({
+                // Collapse the readme
+                $( '#readme' ).accordion({
                     active: null,
                     collapsible: true,
                     animate: 50,
