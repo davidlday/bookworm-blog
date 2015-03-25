@@ -185,6 +185,11 @@ bookworm.getParameterByName = function( name ) {
     return results === null ? "" : decodeURIComponent( results[1].replace( /\+/g, " "));
 };
 
+// Because several browsers don't support Number.isInteger()
+bookworm.isInteger = function( value ) {
+    return value % 1 === 0;
+}
+
 // Return a full field definition
 bookworm.getField = function( field ) {
     return fields[field];
@@ -465,7 +470,7 @@ bookworm.ui = {
             var formatted_value = data[metric];
             if ( !isNaN( data[metric])) {
                 var value = Number( data[metric]);
-                if ( Number.isInteger( value )) {
+                if ( bookworm.isInteger( value ) ) {
                     formatted_value = value;
                 } else {
                     formatted_value = Number( value ).toFixed( 4 );

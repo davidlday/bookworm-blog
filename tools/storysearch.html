@@ -109,23 +109,30 @@ noToc: true
                     });
                 });
 
-                // Refresh pagination
-                $('.sync-pagination').twbsPagination({
-                    totalPages: totalPages,
-                    startPage:  currentPage,
-                    onPageClick: function ( event, page ) {
-                        var new_start = ( page - 1 ) * rows;
-                        window.location.href = '?q=' + query +
-                            "&s=" + new_start;
-                    }
-                });
-
-                // Update results stats div
                 $('#searchStats').empty();
-                $('#searchStats').append(
-                    "Found " + data.response.numFound + " stories. Showing " +
-                    pageBegin + "-" + pageEnd + "."
-                );
+                if ( resultsTotal ) {
+                    // Set pagination
+                    $('.sync-pagination').twbsPagination({
+                        totalPages: totalPages,
+                        startPage:  currentPage,
+                        onPageClick: function ( event, page ) {
+                            var new_start = ( page - 1 ) * rows;
+                            window.location.href = '?q=' + query +
+                                "&s=" + new_start;
+                        }
+                    });
+
+                    $('#searchStats').append(
+                        "Found " + data.response.numFound + " stories. Showing " +
+                        pageBegin + "-" + pageEnd + "."
+                    );
+                } else {
+                    $('#searchStats').append(
+                        "No matching stories found."
+                    );
+
+                }
+
 
                 // Show result set
                 $('#results').show();
