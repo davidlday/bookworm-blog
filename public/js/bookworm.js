@@ -430,13 +430,16 @@ bookworm.solr = {
 
 // Analyzer
 bookworm.analyzer = {
-    url: 'http://bookworm.davidlday.com/public/scripts/analyze.py',
+//     url: 'http://bookworm.davidlday.com/public/scripts/analyze.py',
+    url: 'http://api.davidlday.com/bookworm/core/v1/analysis',
     analyzeText: function analyzeText( txt ) {
         return $.ajax({
             type: "POST",
             url: this.url,
             crossDomain: true,
-            data: {'text': txt},
+            contentType: 'application/json; charset=utf-8',
+//             data: {'text': txt},
+            data: JSON.stringify( { 'prose': txt } ),
             dataType: 'json',
         });
     },

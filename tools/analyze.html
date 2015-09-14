@@ -124,15 +124,17 @@ noToc: true
                     bookworm.analyzer.analyzeText( story )
                         .done( displayAnalysis )
                         .fail( displayAjaxError );
-                    bookworm.solr.moreLikeThis( mltSettings )
-                        .done( displaySimilarStories )
-                        .fail( displayAjaxError);
+//                     bookworm.solr.moreLikeThis( mltSettings )
+//                         .done( displaySimilarStories )
+//                         .fail( displayAjaxError);
                 }
             }
 
             // Show analysis
             function displayAnalysis( data ) {
+                console.log( data )
                 var analysisResults = bookworm.analyzer.analysisResultsFactory( data );
+                console.log( analysisResults )
 
                 // Populate analysis results
                 bookworm.ui.populateAnalysisTableBody( '#analysisTableBody', showMetrics, data );
