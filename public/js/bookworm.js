@@ -430,7 +430,6 @@ bookworm.solr = {
 
 // Analyzer
 bookworm.analyzer = {
-//     url: 'http://bookworm.davidlday.com/public/scripts/analyze.py',
     url: 'http://api.davidlday.com/bookworm/core/v1/analysis',
     analyzeText: function analyzeText( txt ) {
         return $.ajax({
@@ -438,7 +437,6 @@ bookworm.analyzer = {
             url: this.url,
             crossDomain: true,
             contentType: 'application/json; charset=utf-8',
-//             data: {'text': txt},
             data: JSON.stringify( { 'prose': txt } ),
             dataType: 'json',
         });
@@ -446,6 +444,25 @@ bookworm.analyzer = {
     analysisResultsFactory: function( data ) {
         var results = {};
         return $.extend( {}, results, data );
+    }
+}
+
+// Extractor
+bookworm.extractor = {
+    url: 'http://api.davidlday.com/bookworm/core/v1/extraction',
+    extractText: function extractText( file ) {
+        var fData = new FormData();
+        fData.append( 'file', file );
+        return $.ajax({
+            type: "POST",
+            url: this.url,
+            data: fData,
+            contentType: false,
+            processData: false,
+            crossDomain: true,
+            dataType: 'json',
+            cache: false,
+        });
     }
 }
 

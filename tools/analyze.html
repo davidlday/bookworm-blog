@@ -19,10 +19,12 @@ noToc: true
                 <p>This is a list of the raw metrics for the piece analyzed.</p>
                 <p class="font-bold">Market Gauge</p>
                 <p>This compares the raw metrics from the piece analyzed to the statistics for each market. The gauges show green, yellow, and red instead of numbers to emphasize the idea that the raw numbers are not the focus. The summary shows how statistically similar the piece is overall to each magazine, while gauges for individual metrics are shown under each magazine heading. The summary uses absolute values, so it runs red to green. The details for each magazine, however, puts green in the middle, because for an individual metric it's useful to know if the analyzed piece is above or below a market's mean value. There's no weighting used, meaning every metric is given equal footing, because I don't have enough data to know which, if any, are more important.</p>
+<!--
                 <p class="font-bold">Magazines with Stories in the Top Similar Stories</p>
                 <p>This is a bit of statistical analysis called <a href="http://opensourceconnections.com/blog/2013/09/30/easy-k-nn-document-classification-with-solr-and-python/" target="_blank">k-nearest neighbors</a>. Looking at a set of similar stories and seeing which magazines they represent gives us another way of figuring out which market(s) a story might fit in. How are the similar stories selected? Great question. That brings us to the last perspective...</p>
                 <p class="font-bold ss-title"></p>
                 <p>This is accomplished through a bit of search engine voodoo. It's based on something called Term Vectors, which is a fancy way of saying the number of times each word appears in a story. It doesn't look at all words, though, but rather selects what are considered Interesting Terms. I still don't understand the process well enough to explain it, but it's a widely used approach to finding similar documents around the web. If you interested in learning more, see the Solr documentation for the <a href="https://wiki.apache.org/solr/MoreLikeThisHandler" target="_blank">More Like This Handler</a>.</p>
+-->
                 <p class="font-bold">General Notes</p>
                 <ul>
                     <li>Nothing from this form is saved anywhere.</li>
@@ -37,10 +39,12 @@ noToc: true
         </div>
         <hr />
         <div id="story" style="display: none;">
+            <input id="storyFile" type="file" />
+            <button id="extractionButton">Extract Text</button>
             <textarea id="storyText" class="storyText" placeholder="Paste story here..."></textarea>
             <button id="analyzeButton">Analyze</button>
         </div>
-        <div id="results-message" style="display: none;">Running Bookworm analysis and searching for similar stories...</div>
+        <div id="results-message" style="display: none;">Running analysis...</div>
         <div id="results" class="font-75" style="display: none;">
             <h3>Bookworm Analysis</h3>
             <table class="scrollTable" id="analysisTable">
@@ -61,7 +65,21 @@ noToc: true
                     <tbody id="marketSummary-TableBody"></tbody>
                 </table>
             </div>
+            <hr >
+            <h3>Word Frequency</h3>
+            <table class="scrollTable" id="wordFrequencyTable">
+                <thead id="wordFrequencyTableHead">
+                    <tr>
+                        <td>Word</td>
+                        <td>Frequency</td>
+                        <td>Percentage</td>
+                    </tr>
+                </thead>
+                <tbody id="wordFrequencyTableBody" class="font-75">
+                </tbody>
+            </table>
             <hr />
+<!--
             <h3>Magazines with Stories in the Top Similar Stories</h3>
             <table class="scrollTable" id="knnTable">
                 <thead id="knnTableHead" class="text-center">
@@ -88,6 +106,7 @@ noToc: true
                 <tbody id="mltTableBody" class="font-75">
                 </tbody>
             </table>
+-->
         </div>
 
         <script>
@@ -97,8 +116,20 @@ noToc: true
                 ssCount = 100,
                 ssMaxTerms = 20;
 
-            // Search button
+            // Analyze button
             $('#analyzeButton').click( analyzeStory );
+
+            $('#extractionButton').click( extractStory );
+
+
+            // Text Extraction
+            function extractStory() {
+                bookworm.extractor.extractText( $('#storyFile').prop('files')[0] )
+                    .done( function(data) {
+                        $('#storyText').val( data.text );
+                    })
+                    .fail( displayAjaxError );
+            }
 
             // Local function to analyze the story
             function analyzeStory() {
@@ -106,10 +137,11 @@ noToc: true
                 $('#results').hide();
 
                 // Wipe out prior results
-                $('#analysisTableBody').empty();
-                $('#mltTableBody').empty();
-                $('#knnTableBody').empty();
-                $('#marketSummary-TableBody').empty();
+                $( '#analysisTableBody' ).empty();
+                $( '#wordFrequencyTableBody' ).empty();
+//                 $('#mltTableBody').empty();
+//                 $('#knnTableBody').empty();
+//                 $('#marketSummary-TableBody').empty();
                 $.each( magazines, function( index, magazine ) {
                     $('#' + magazine.id + '-TableBody').empty();
                 });
@@ -132,12 +164,10 @@ noToc: true
 
             // Show analysis
             function displayAnalysis( data ) {
-                console.log( data )
                 var analysisResults = bookworm.analyzer.analysisResultsFactory( data );
-                console.log( analysisResults )
 
                 // Populate analysis results
-                bookworm.ui.populateAnalysisTableBody( '#analysisTableBody', showMetrics, data );
+                bookworm.ui.populateAnalysisTableBody( '#analysisTableBody', showMetrics, analysisResults );
 
                 // Start of comparing work to market metrics
                 bookworm.solr.getMagazines()
@@ -208,6 +238,19 @@ noToc: true
                             })
                             .show();
                     });
+
+                // Populate Word Frequency Table
+                $.each( analysisResults.word_frequency, function( index, value ) {
+                    word_pct = ( value.count / analysisResults.word_count ) * 100;
+                    $( '#wordFrequencyTableBody' ).append(
+                        "<tr id=\"wordcount-" + value.word + "\">" +
+                        "<td>" + value.word + "</td>" +
+                        "<td class=\"text-right\">" + value.count + "</td>" +
+                        "<td class=\"text-right\">" +
+                        Number( word_pct ).toFixed( 4 ) + " %</td>" +
+                        "</tr>"
+                    );
+                });
 
 
                 // Show the results div
