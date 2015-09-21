@@ -41,7 +41,8 @@ noToc: true
         <div id="story" style="display: none;">
             <input id="storyFile" type="file" />
             <button id="extractionButton">Extract Text</button>
-            <textarea id="storyText" class="storyText" placeholder="Paste story here..."></textarea>
+            <hr />
+            <textarea id="storyText" class="storyText" placeholder="Extract text from file or paste story here..."></textarea>
             <button id="analyzeButton">Analyze</button>
         </div>
         <div id="results-message" style="display: none;">Running analysis...</div>
@@ -139,9 +140,9 @@ noToc: true
                 // Wipe out prior results
                 $( '#analysisTableBody' ).empty();
                 $( '#wordFrequencyTableBody' ).empty();
+                $('#marketSummary-TableBody').empty();
 //                 $('#mltTableBody').empty();
 //                 $('#knnTableBody').empty();
-//                 $('#marketSummary-TableBody').empty();
                 $.each( magazines, function( index, magazine ) {
                     $('#' + magazine.id + '-TableBody').empty();
                 });

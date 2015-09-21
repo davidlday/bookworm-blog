@@ -257,7 +257,7 @@ bookworm.display_results = [
 bookworm.solr = {
     // Default Search settings
     searchAjaxSettings: {
-        url: 'http://bookworm.davidlday.com/public/scripts/storysearch.py',
+        url: 'https://api.davidlday.com/bookworm/solr/select',
         type: "GET",
         crossDomain: true,
         dataType: 'json',
@@ -284,7 +284,7 @@ bookworm.solr = {
     },
     // Default More Like This settings
     mltAjaxSettings: {
-        url: 'http://bookworm.davidlday.com/public/scripts/storieslikethis.py',
+        url: 'https://api.davidlday.com/bookworm/solr/mlt',
         type: "POST",
         crossDomain: true,
         data: {
@@ -430,7 +430,7 @@ bookworm.solr = {
 
 // Analyzer
 bookworm.analyzer = {
-    url: 'http://api.davidlday.com/bookworm/core/v1/analysis',
+    url: 'https://api.davidlday.com/bookworm/core/v1/analysis',
     analyzeText: function analyzeText( txt ) {
         return $.ajax({
             type: "POST",
@@ -449,7 +449,7 @@ bookworm.analyzer = {
 
 // Extractor
 bookworm.extractor = {
-    url: 'http://api.davidlday.com/bookworm/core/v1/extraction',
+    url: 'https://api.davidlday.com/bookworm/core/v1/extraction',
     extractText: function extractText( file ) {
         var fData = new FormData();
         fData.append( 'file', file );
