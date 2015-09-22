@@ -281,7 +281,6 @@ noToc: true
 
                 // Populate POV Frequency Table
                 $.each( ['first','second','third'] , function( index, pov ) {
-                    console.log( index, pov );
                     pov_total = analysisResults.pov_indicator_frequency[pov].total_frequency
                     grand_total = analysisResults.pov_indicator_frequency.grand_total_frequency
                     pov_pct = ( pov_total / grand_total ) * 100;
