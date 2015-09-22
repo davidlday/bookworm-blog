@@ -59,8 +59,8 @@ noToc: true
             <table class="scrollTable" id="analysisTable">
                 <thead id="analysisTableHead">
                     <tr>
-                        <td>Metric</td>
-                        <td>Value</td>
+                        <th>Metric</th>
+                        <th>Value</th>
                     </tr>
                 </thead>
                 <tbody id="analysisTableBody" class="font-75">
@@ -71,7 +71,7 @@ noToc: true
             <div id="marketComparison" class="accordion font-75" style="display: none;">
                 <p>Summary</p>
                 <table class="scrollTable" id="marketSummary">
-                    <tbody id="marketSummary-TableBody"></tbody>
+                    <tbody id="marketSummaryTableBody"></tbody>
                 </table>
             </div>
             <hr >
@@ -81,12 +81,25 @@ noToc: true
                 <table class="scrollTable" id="wordFrequencyTable">
                     <thead id="wordFrequencyTableHead">
                         <tr>
-                            <td>Word</td>
-                            <td>Frequency</td>
-                            <td>Percentage</td>
+                            <th>Word</th>
+                            <th>Frequency</th>
+                            <th>Percentage</th>
                         </tr>
                     </thead>
                     <tbody id="wordFrequencyTableBody" class="font-75">
+                    </tbody>
+                </table>
+                <p>Point of View Indicator Frequency</p>
+                <table class="scrollTable" id="povFrequencyTable">
+                    <thead id="povFrequencyTableHead">
+                        <tr>
+                            <th>Point of View</th>
+                            <th>Indicator</th>
+                            <th>Frequency</th>
+                            <th>Percent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="povFrequencyTableBody" class="font-75">
                     </tbody>
                 </table>
             </div>
@@ -150,8 +163,10 @@ noToc: true
 
                 // Wipe out prior results
                 $( '#analysisTableBody' ).empty();
+                $( '#marketSummaryTableBody' ).empty();
                 $( '#wordFrequencyTableBody' ).empty();
-                $( '#marketSummary-TableBody' ).empty();
+                $( '#povFrequencyTableBody' ).empty();
+
 //                 $('#mltTableBody').empty();
 //                 $('#knnTableBody').empty();
                 $.each( magazines, function( index, magazine ) {
@@ -231,7 +246,7 @@ noToc: true
                                     point = svgWidth - (dev * (svgWidth / 3) )
                                     deviations[magazine.id].push( dev );
 
-                                    $( '#marketSummary-TableBody' ).append(
+                                    $( '#marketSummaryTableBody' ).append(
                                         '<tr><td class="text-center">' +
                                         magazine.name + ' (' + magazine.totalStories +
                                         ' stories)<br /><svg id="' + svgId +
@@ -260,6 +275,34 @@ noToc: true
                         "<td class=\"text-right\">" + value.count + "</td>" +
                         "<td class=\"text-right\">" +
                         Number( word_pct ).toFixed( 4 ) + " %</td>" +
+                        "</tr>"
+                    );
+                });
+
+                // Populate POV Frequency Table
+                $.each( ['first','second','third'] , function( index, pov ) {
+                    console.log( index, pov );
+                    pov_total = analysisResults.pov_indicator_frequency[pov].total_frequency
+                    grand_total = analysisResults.pov_indicator_frequency.grand_total_frequency
+                    pov_pct = ( pov_total / grand_total ) * 100;
+
+                    $.each( analysisResults.pov_indicator_frequency[pov].indicator_frequency, function( word, count ) {
+                        word_pct = ( count / grand_total ) * 100;
+                        $( '#povFrequencyTableBody' ).append(
+                            "<tr id=\"pov-" + word + "\">" +
+                            "<td>" + pov + "</td>" +
+                            "<td class=\"text-right\">" + word + "</td>" +
+                            "<td class=\"text-right\">" + count + "</td>" +
+                            "<td class=\"text-right\">" +
+                            Number( word_pct ).toFixed( 4 ) + " %</td>" +
+                            "</tr>"
+                        );
+                    });
+                    $( '#povFrequencyTableBody' ).append(
+                        "<tr id=\"pov-" + pov + "\">" +
+                        "<th colspan=\"2\" >" + pov + "</th>" +
+                        "<th class=\"text-right\">" + pov_total + "</th>" +
+                        "<th class=\"text-right\">" + Number( pov_pct ).toFixed( 4 ) + " %</th>" +
                         "</tr>"
                     );
                 });
