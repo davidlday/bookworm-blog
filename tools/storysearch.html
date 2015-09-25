@@ -26,9 +26,11 @@ noToc: true
 
         <script>
             // Get query text
+            var default_rows = 10;
             var query = bookworm.getParameterByName('q') || '';
             var start = Number( bookworm.getParameterByName('s')) || 0;
-            var rows = Number( bookworm.getParameterByName('r')) || 10;
+            var rows = Number( bookworm.getParameterByName('r')) || default_rows;
+            var sort = bookworm.getParameterByName('sort') || '';
 
             // Controls what metrics are displayed.
             var showMetrics = bookworm.display_results;
@@ -71,7 +73,7 @@ noToc: true
                     // Populate results div
                     $('#results').append(
                         "<div class=\"result\" id=\"res-" + itemNumber + "\"><h3>" +
-                        itemNumber + ".&nbsp;" +
+                        itemNumber + ".&nbsp;&nbsp;" +
                         doc.magazine + " >> <a href=\"" + doc.url + "\" target=\"story\">" +
                         doc.title + "</a></h3>" +
                         "<p class=\"font-75\">By " + doc.author.join(", ") + "<br />" +
@@ -81,13 +83,13 @@ noToc: true
                         "<div class=\"accordion font-62\" id=\"det-" + itemNumber + "\">"+
                         '<h3>Bookworm Analysis</h3>' +
                         '<table class="scrollTable" id="analysisTable">' +
-                        '<thead><tr><td>Metric</td><td>Value</td></tr></thead>' +
+                        '<thead><tr><th>Metric</th><th>Value</th></tr></thead>' +
                         '<tbody id="analysisTableBody-' + itemNumber + '"></tbody>' +
                         '</table>' +
                         '<h3>Top ' + data.moreLikeThis[doc.url].docs.length +
                         ' Similar Stories</h3>' +
                         '<table class="scrollTable" id="mltTable">' +
-                        '<thead><tr><td>Title</td><td>Author</td>' +
+                        '<thead><tr><th>Title</th><th>Author</th>' +
                         '<td>Magazine</td><td>Published</td></tr></thead>'+
                         '<tbody id="mltTableBody-' + itemNumber + '"></tbody>' +
                         '</table>' +
@@ -118,7 +120,9 @@ noToc: true
                         onPageClick: function ( event, page ) {
                             var new_start = ( page - 1 ) * rows;
                             window.location.href = '?q=' + query +
-                                "&s=" + new_start;
+                                ( sort ? ('&sort=' + sort) : '') +
+                                '&s=' + new_start +
+                                ( rows === default_rows ? '' : '&r=' + rows);
                         }
                     });
 
@@ -141,8 +145,13 @@ noToc: true
             // Hook enter to search
             $('body').keypress( function( e ) {
                 if ( e.keyCode === 13 ) {
-                    var query = $('#searchText').val();
+                    var query = $.trim($('#searchText').val());
                     window.location.href = '?q=' + query;
+                    // Initial search starts with just a query
+                    // Need to add in form fields for sort and number of rows.
+//                     window.location.href = '?q=' + query +
+//                         ( sort ? ('&sort=' + sort) : '') +
+//                         ( rows === default_rows ? '' : '&r=' + rows);
                 }
             });
 
@@ -153,12 +162,12 @@ noToc: true
                     $('#searchText').val( query );
                     $('#searchStats').empty();
                     $('#searchStats').append("Searching...");
-//                     searchStories( query, start, rows, displayResults );
                     bookworm.solr.search({
                         data: {
                             q: query,
                             start: start,
                             rows: rows,
+                            sort: sort,
                             fl: 'magazine,title,url,id,author,pub_date,score,' + showMetrics.join()
                         },
                     })
