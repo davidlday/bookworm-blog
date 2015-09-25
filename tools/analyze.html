@@ -53,19 +53,48 @@ noToc: true
             <textarea id="storyText" class="storyText" placeholder="Extract text from file or paste story here..."></textarea>
             <button id="analyzeButton">Analyze</button>
         </div>
-        <div id="results-message" style="display: none;">Running analysis...</div>
-        <div id="results" class="font-75" style="display: none;">
-            <h3>Summary Analysis</h3>
-            <table class="scrollTable" id="analysisTable">
-                <thead id="analysisTableHead">
-                    <tr>
-                        <th>Metric</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody id="analysisTableBody" class="font-75">
-                </tbody>
-            </table>
+        <hr />
+        <div id="results-message" style="display: none;"><h3>Running analysis...</h3></div>
+        <div id="results" style="display: none;">
+            <h3>Analysis</h3>
+            <div id="analysisResults" class="accordion font-75">
+                <p>Summary</p>
+                <table class="scrollTable" id="analysisTable">
+                    <thead id="analysisTableHead">
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysisTableBody">
+                    </tbody>
+                </table>
+                <p>Point of View Indicator Frequency</p>
+                <table class="scrollTable" id="povFrequencyTable">
+                    <thead id="povFrequencyTableHead">
+                        <tr>
+                            <th>Point of View</th>
+                            <th>Indicator</th>
+                            <th>Frequency</th>
+                            <th>Percent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="povFrequencyTableBody">
+                    </tbody>
+                </table>
+                <p>Word Frequency (Could be large.)</p>
+                <table class="scrollTable" id="wordFrequencyTable">
+                    <thead id="wordFrequencyTableHead">
+                        <tr>
+                            <th>Word</th>
+                            <th>Frequency</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wordFrequencyTableBody">
+                    </tbody>
+                </table>
+            </div>
             <hr />
             <h3>Market Gauge</h3>
             <div id="marketComparison" class="accordion font-75" style="display: none;">
@@ -74,7 +103,8 @@ noToc: true
                     <tbody id="marketSummaryTableBody"></tbody>
                 </table>
             </div>
-            <hr >
+            <hr />
+<!--
             <h3>Additional Details</h3>
             <div id="additionalDetails" class="accordion font-75">
                 <p>Word Frequency</p>
@@ -104,7 +134,6 @@ noToc: true
                 </table>
             </div>
             <hr />
-<!--
             <h3>Magazines with Stories in the Top Similar Stories</h3>
             <table class="scrollTable" id="knnTable">
                 <thead id="knnTableHead" class="text-center">
@@ -131,9 +160,9 @@ noToc: true
                 <tbody id="mltTableBody" class="font-75">
                 </tbody>
             </table>
+            <hr />
 -->
         </div>
-
         <script>
             // Controls what return values are displayed in the table.
             var showMetrics = bookworm.display_results,
@@ -306,9 +335,9 @@ noToc: true
                     );
                 });
 
-                $( '#additionalDetails' )
+                $( '#analysisResults' )
                     .accordion({
-                        active: false,
+                        active: 0,
                         collapsible: true,
                         animate: 50,
                     });
