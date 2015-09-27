@@ -85,21 +85,10 @@ noToc: true
                         '<table class="scrollTable" id="analysisTable">' +
                         '<thead><tr><th>Metric</th><th>Value</th></tr></thead>' +
                         '<tbody id="analysisTableBody-' + itemNumber + '"></tbody>' +
-                        '</table>' +
-                        '<h3>Top ' + data.moreLikeThis[doc.url].docs.length +
-                        ' Similar Stories</h3>' +
-                        '<table class="scrollTable" id="mltTable">' +
-                        '<thead><tr><th>Title</th><th>Author</th>' +
-                        '<td>Magazine</td><td>Published</td></tr></thead>'+
-                        '<tbody id="mltTableBody-' + itemNumber + '"></tbody>' +
-                        '</table>' +
-                        "</div>"+
-                        "<hr />"
+                        '</table>'
                     );
                     bookworm.ui.populateAnalysisTableBody('#analysisTableBody-' + itemNumber,
                         showMetrics, doc );
-                    bookworm.ui.populateMltTableBody('#mltTableBody-' + itemNumber,
-                        data.moreLikeThis[doc.url].docs );
                 });
 
                 // Collapse all accordions.
@@ -168,7 +157,8 @@ noToc: true
                             start: start,
                             rows: rows,
                             sort: sort,
-                            fl: 'magazine,title,url,id,author,pub_date,score,' + showMetrics.join()
+                            fl: 'magazine,title,url,id,author,pub_date,score,' + showMetrics.join(),
+                            mlt: false, // Disable More Like This results for now
                         },
                     })
                         .done( displayResults );

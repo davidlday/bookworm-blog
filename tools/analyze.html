@@ -7,161 +7,87 @@ snapsvg: true
 bookwormjs: true
 noToc: true
 ---
-        <p>See how a story compares statistically to the magazines I've analyzed.</p>
-        {% include bwdownload.html %}
-        <hr />
-        <div id="readme" class="accordion font-75">
-            <h3>README</h3>
-            <table>
-                <tbody><tr><td>
-                <p>A quick rundown of the sections below:</p>
-                <p class="font-bold">Text Extractor</p>
-                <p>Load text from a .doc, .docx, .rtf, or .txt file into the Analyzer text area below.</p>
-                <p class="font-bold">Analyzer Input</p>
-                <p>Paste text to be analyzed here, or load from a file using the Text Extractor.</p>
-                <p class="font-bold">Summary Analysis</p>
-                <p>This is a list of the raw metrics for the piece analyzed.</p>
-                <p class="font-bold">Market Gauge</p>
-                <p>This compares the raw metrics from the piece analyzed to the statistics for each market. The gauges show green, yellow, and red instead of numbers to emphasize the idea that the raw numbers are not the focus. The summary shows how statistically similar the piece is overall to each magazine, while gauges for individual metrics are shown under each magazine heading. The summary uses absolute values, so it runs red to green. The details for each magazine, however, puts green in the middle, because for an individual metric it's useful to know if the analyzed piece is above or below a market's mean value. There's no weighting used, meaning every metric is given equal footing, because I don't have enough data to know which, if any, are more important.</p>
-                <p class="font-bold">Word Frequency</p>
-                <p>A list of unique words and the total number of times each appears in the text.</p>
-<!--
-                <p class="font-bold">Magazines with Stories in the Top Similar Stories</p>
-                <p>This is a bit of statistical analysis called <a href="http://opensourceconnections.com/blog/2013/09/30/easy-k-nn-document-classification-with-solr-and-python/" target="_blank">k-nearest neighbors</a>. Looking at a set of similar stories and seeing which magazines they represent gives us another way of figuring out which market(s) a story might fit in. How are the similar stories selected? Great question. That brings us to the last perspective...</p>
-                <p class="font-bold ss-title"></p>
-                <p>This is accomplished through a bit of search engine voodoo. It's based on something called Term Vectors, which is a fancy way of saying the number of times each word appears in a story. It doesn't look at all words, though, but rather selects what are considered Interesting Terms. I still don't understand the process well enough to explain it, but it's a widely used approach to finding similar documents around the web. If you interested in learning more, see the Solr documentation for the <a href="https://wiki.apache.org/solr/MoreLikeThisHandler" target="_blank">More Like This Handler</a>.</p>
--->
-                <p class="font-bold">General Notes</p>
+        <div id="tabs" style="display: none" class="font-75">
+            <ul>
+                <li><a href="#storyTab">Test your Prose</a></li>
+                <li><a href="#marketTab">Market Gauge</a></li>
+                <li><a href="#analysisTab">Analysis Details</a></li>
+            </ul>
+            <div id="storyTab">
+                <p>See how a story compares statistically to the magazines I've analyzed.</p>
+                {% include bwdownload.html %}
+                <p>There are two ways to get your prose loaded. You can either use "Choose file" below and "Load" text from a .doc, .docx, .rtf, or .txt file, or you can copy / paste directly into the text area below. Once you have some text ready to go, just click the "Analyze" button!</p>
+                <hr />
+                <div id="message" style="display: none;"></div>
+                <p>
+                    <input id="storyFile" type="file" />
+                    <button id="extractionButton">Load Text</button>
+                </p>
+                <p>
+                    <textarea id="storyText" class="storyText" placeholder="Extract text from file or paste story here..."></textarea>
+                    <button id="analyzeButton">Analyze Text</button>
+                </p>
+                <hr />
+                <h4>Things to consider:</h4>
                 <ul>
                     <li>Nothing from this form is saved anywhere.</li>
-                    <li>Plain text only in the Analyzer text area.</li>
-                    <li>Everything between double quotes (") is considered dialogue.</li>
+                    <li>Works only on plain text.</li>
+                    <li>Everything between double quotes (") is considered dialogue. Smart quotes are fine.</li>
                     <li>Section separators (e.g. #) are ignored.</li>
                     <li>Paragraphs are separated by one or more line breaks (return). Multiple consecutive line breaks are considered as one.</li>
                     <li>The formulae for the readability scores vary across implementations. Scores here may not exactly match scores from another tool.</li>
                 </ul>
-                </td></tr></tbody>
-            </table>
-        </div>
-        <hr />
-        <div id="story" style="display: none;">
-            <h3>Text Extractor</h3>
-            <input id="storyFile" type="file" />
-            <button id="extractionButton">Load</button>
-            <hr />
-            <h3>Analyzer Input</h3>
-            <textarea id="storyText" class="storyText" placeholder="Extract text from file or paste story here..."></textarea>
-            <button id="analyzeButton">Analyze</button>
-        </div>
-        <hr />
-        <div id="results-message" style="display: none;"><h3>Running analysis...</h3></div>
-        <div id="results" style="display: none;">
-            <h3>Analysis</h3>
-            <div id="analysisResults" class="accordion font-75">
-                <p>Summary</p>
-                <table class="scrollTable" id="analysisTable">
-                    <thead id="analysisTableHead">
-                        <tr>
-                            <th>Metric</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody id="analysisTableBody">
-                    </tbody>
-                </table>
-                <p>Point of View Indicator Frequency</p>
-                <table class="scrollTable" id="povFrequencyTable">
-                    <thead id="povFrequencyTableHead">
-                        <tr>
-                            <th>Point of View</th>
-                            <th>Indicator</th>
-                            <th>Frequency</th>
-                            <th>Percent</th>
-                        </tr>
-                    </thead>
-                    <tbody id="povFrequencyTableBody">
-                    </tbody>
-                </table>
-                <p>Word Frequency (Could be large.)</p>
-                <table class="scrollTable" id="wordFrequencyTable">
-                    <thead id="wordFrequencyTableHead">
-                        <tr>
-                            <th>Word</th>
-                            <th>Frequency</th>
-                            <th>Percentage</th>
-                        </tr>
-                    </thead>
-                    <tbody id="wordFrequencyTableBody">
-                    </tbody>
-                </table>
             </div>
-            <hr />
-            <h3>Market Gauge</h3>
-            <div id="marketComparison" class="accordion font-75" style="display: none;">
-                <p>Summary</p>
-                <table class="scrollTable" id="marketSummary">
-                    <tbody id="marketSummaryTableBody"></tbody>
-                </table>
+            <div id="analysisTab">
+                <p>These are detailed metrics for the prose analyzed. The raw statistics here are compared with those from the different magazines to come up with the Market Gauge.</p>
+                <div id="analysisResults" class="accordion font-75">
+                    <p>Summary</p>
+                    <table class="scrollTable" id="analysisTable">
+                        <thead id="analysisTableHead">
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analysisTableBody">
+                        </tbody>
+                    </table>
+                    <p>Point of View Indicator Frequency</p>
+                    <table class="scrollTable" id="povFrequencyTable">
+                        <thead id="povFrequencyTableHead">
+                            <tr>
+                                <th>Point of View</th>
+                                <th>Indicator</th>
+                                <th>Frequency</th>
+                                <th>Percent</th>
+                            </tr>
+                        </thead>
+                        <tbody id="povFrequencyTableBody">
+                        </tbody>
+                    </table>
+                    <p>Word Frequency - a list of unique words and number of times each occurs.</p>
+                    <table class="scrollTable" id="wordFrequencyTable">
+                        <thead id="wordFrequencyTableHead">
+                            <tr>
+                                <th>Word</th>
+                                <th>Frequency</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody id="wordFrequencyTableBody">
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <hr />
-<!--
-            <h3>Additional Details</h3>
-            <div id="additionalDetails" class="accordion font-75">
-                <p>Word Frequency</p>
-                <table class="scrollTable" id="wordFrequencyTable">
-                    <thead id="wordFrequencyTableHead">
-                        <tr>
-                            <th>Word</th>
-                            <th>Frequency</th>
-                            <th>Percentage</th>
-                        </tr>
-                    </thead>
-                    <tbody id="wordFrequencyTableBody" class="font-75">
-                    </tbody>
-                </table>
-                <p>Point of View Indicator Frequency</p>
-                <table class="scrollTable" id="povFrequencyTable">
-                    <thead id="povFrequencyTableHead">
-                        <tr>
-                            <th>Point of View</th>
-                            <th>Indicator</th>
-                            <th>Frequency</th>
-                            <th>Percent</th>
-                        </tr>
-                    </thead>
-                    <tbody id="povFrequencyTableBody" class="font-75">
-                    </tbody>
-                </table>
+            <div id="marketTab">
+                <p>Compares raw metrics from the analyzed story to the statistics for each market. The gauges show green, yellow, and red instead of numbers to emphasize the idea that the raw numbers are not the focus. The summary shows how statistically similar the story is in general to each magazine's body of published work, while gauges for individual metrics are shown under each magazine heading. The summary uses absolute values, so it runs red to green. The details for each magazine, however, puts green in the middle, because for an individual metric it's useful to know if the analyzed piece is above or below a market's mean value. There's no weighting used, meaning every metric is given equal consideration, because I don't have enough data to know which, if any, are more important.</p>
+                <div id="marketComparison" class="accordion font-75" style="display: none;">
+                    <p>Summary</p>
+                    <table class="scrollTable" id="marketSummary">
+                        <tbody id="marketSummaryTableBody"></tbody>
+                    </table>
+                </div>
             </div>
-            <hr />
-            <h3>Magazines with Stories in the Top Similar Stories</h3>
-            <table class="scrollTable" id="knnTable">
-                <thead id="knnTableHead" class="text-center">
-                    <tr>
-                        <td>Magazine</td>
-                        <td>Average Similarity Score</td>
-                        <td>Number of Similar Stories</td>
-                    </tr>
-                </thead>
-                <tbody id="knnTableBody" class="font-75">
-                </tbody>
-            </table>
-            <hr />
-            <h3 id="ss-title" class="ss-title"></h3>
-            <table class="scrollTable" id="mltTable">
-                <thead id="mltTableHead">
-                    <tr>
-                        <td>Title</td>
-                        <td>Author</td>
-                        <td>Magazine</td>
-                        <td>Published</td>
-                    </tr>
-                </thead>
-                <tbody id="mltTableBody" class="font-75">
-                </tbody>
-            </table>
-            <hr />
--->
         </div>
         <script>
             // Controls what return values are displayed in the table.
@@ -170,34 +96,34 @@ noToc: true
                 ssCount = 100,
                 ssMaxTerms = 20;
 
+            // Load button
+            $('#extractionButton').click( extractStory );
             // Analyze button
             $('#analyzeButton').click( analyzeStory );
 
-            $('#extractionButton').click( extractStory );
-
-
             // Text Extraction
             function extractStory() {
+                $( '#message' ).append( '<h3>Loading text from file...</h3>' )
+                    .show();
                 bookworm.extractor.extractText( $('#storyFile').prop('files')[0] )
                     .done( function(data) {
                         $( '#storyText' ).val( data.text );
+                        $( '#message' ).empty();
+                        $( '#message' ).hide();
                     })
                     .fail( displayAjaxError );
             }
 
             // Local function to analyze the story
             function analyzeStory() {
-                $( '#results-message' ).show();
-                $( '#results' ).hide();
-
+                $( '#message' ).append( '<h3>Analyzing text...</h3>' )
+                    .show();
                 // Wipe out prior results
                 $( '#analysisTableBody' ).empty();
                 $( '#marketSummaryTableBody' ).empty();
                 $( '#wordFrequencyTableBody' ).empty();
                 $( '#povFrequencyTableBody' ).empty();
 
-//                 $('#mltTableBody').empty();
-//                 $('#knnTableBody').empty();
                 $.each( magazines, function( index, magazine ) {
                     $('#' + magazine.id + '-TableBody').empty();
                 });
@@ -205,16 +131,9 @@ noToc: true
                 // Make sure there's text and run analysis
                 var story = $('#storyText').val();
                 if (story != null && story != '') {
-                    var mltSettings = { data: {
-                        'stream.body': story,
-                        rows: ssCount,
-                        'mlt.maxqt': ssMaxTerms } };
                     bookworm.analyzer.analyzeText( story )
                         .done( displayAnalysis )
                         .fail( displayAjaxError );
-//                     bookworm.solr.moreLikeThis( mltSettings )
-//                         .done( displaySimilarStories )
-//                         .fail( displayAjaxError);
                 }
             }
 
@@ -250,7 +169,7 @@ noToc: true
 
                                             // Keep the point from going off the charts
                                             dev = dev > 3 ? 3 : dev;
-                                            point = ( svgWidth / 2 ) + (dev * (svgWidth / 6));
+                                            point = ( svgWidth / 2 ) + ( dev * ( svgWidth / 6 ) );
                                             deviations[magazine.id].push( Math.abs( dev ) );
 
                                             $( tblBodyId ).append(
@@ -293,6 +212,11 @@ noToc: true
                                 animate: 50,
                             })
                             .show();
+
+                        $( '#tabs' ).tabs( 'enable' );
+                        $( '#tabs' ).tabs( 'option', 'active', 1 );
+                        $( '#message' ).empty();
+                        $( '#message' ).hide();
                     });
 
                 // Populate Word Frequency Table
@@ -341,58 +265,14 @@ noToc: true
                         collapsible: true,
                         animate: 50,
                     });
-
-
-                // Show the results div
-                $( '#results-message' ).hide();
-                $( '#results' ).show();
             }
 
-            // Show similar stories
-            function displaySimilarStories( data ) {
-                var docs = data.response.docs,
-                    magazineCounts = {},
-                    magazineScores = [];
-                bookworm.ui.populateMltTableBody('#mltTableBody', docs);
-
-                $.each( magazines, function( index, magazine ) {
-                    var magazineDocs = $.grep( docs, function( e ) {
-                            return e.magazine === magazine.name;
-                        }),
-                        totalScores = 0,
-                        avgScore = 0;
-
-                    $.each( magazineDocs, function( index, magazineDoc ) {
-                        totalScores += magazineDoc.score;
-                    });
-                    avgScore = ( magazineDocs.length > 0 ) ?
-                        totalScores / magazineDocs.length :
-                        0;
-                    magazineScores.push( {
-                        magazine: magazine.name,
-                        totalScores: totalScores,
-                        avgScore: avgScore,
-                        totalStories: magazineDocs.length,
-                    } );
-                });
-                magazineScores.sort( function( a, b ) {
-                    return b.avgScore - a.avgScore;
-                });
-                $.each( magazineScores, function( index, magazineScore ) {
-                    $( '#knnTableBody' ).append(
-                        "<tr><td>" + magazineScore.magazine + "</td>" +
-                        "<td class=\"text-right\">" + magazineScore.avgScore.toFixed(3) + "</td>" +
-                        "<td class=\"text-right\">" + magazineScore.totalStories + "</td>" +
-                        "</tr>"
-                    );
-                });
-            }
-
-            // Log Ajax Error
+            // Show Ajax Error
             function displayAjaxError( thrownMessage ) {
-                console.log(thrownMessage);
+                alert(thrownMessage.responseJSON.message);
             }
 
+            // Document Ready
             $( document ).ready( function() {
                 $( '.ss-title' ).append(
                     'Top ' + ssCount + ' Similar Stories'
@@ -411,12 +291,12 @@ noToc: true
                         });
                         $( '#story' ).show();
                     });
-                // Collapse the readme
-                $( '#readme' ).accordion({
-                    active: null,
-                    collapsible: true,
-                    animate: 50,
+                // Show tabs
+                $( '#tabs' ).tabs({
+                    disabled: [1, 2]
                 });
+                $( '#tabs' ).show();
+
             });
 
         </script>
