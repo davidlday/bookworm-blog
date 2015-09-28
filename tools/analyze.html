@@ -151,6 +151,19 @@ noToc: true
 
                         $.each( magazines, function( index, magazine ) {
                             deviations[magazine.id] = [];
+
+                            // Prep the summary cells
+                            var summarySvgId = magazine.id + '-summary',
+                                summarySvgWidth = $( '#marketComparison' ).parent().width() * 0.9;
+                            $( '#marketSummaryTableBody' ).append(
+                                '<tr><td class="text-center">' +
+                                magazine.name + ' (' + magazine.totalStories +
+                                ' stories)<br /><svg id="' + summarySvgId +
+                                '" height="30"></svg>' +
+                                '</td></tr>'
+                            );
+                            $( '#' + summarySvgId ).width( summarySvgWidth );
+
                             bookworm.solr.getMagazineStatistics( magazine.name )
                                 .done( function( data ) {
                                     var magazineStatistics = bookworm.solr.magazineStatisticsFactory( data ),
@@ -184,25 +197,15 @@ noToc: true
                                         }
                                     });
                                     // Add a bar to the summary table
-                                    var svgId = magazine.id + '-summary',
-                                        svgWidth = $( '#marketComparison' ).parent().width() * 0.9,
-                                        dev = bookworm.mean( deviations[magazine.id] ),
+                                    var dev = bookworm.mean( deviations[magazine.id] ),
                                         point;
 
                                     // Keep the point from going off the charts
                                     dev = dev > 3 ? 3 : dev;
-                                    point = svgWidth - (dev * (svgWidth / 3) )
+                                    point = summarySvgWidth - (dev * (summarySvgWidth / 3) )
                                     deviations[magazine.id].push( dev );
 
-                                    $( '#marketSummaryTableBody' ).append(
-                                        '<tr><td class="text-center">' +
-                                        magazine.name + ' (' + magazine.totalStories +
-                                        ' stories)<br /><svg id="' + svgId +
-                                        '" height="30"></svg>' +
-                                        '</td></tr>'
-                                    );
-                                    $( '#' + svgId ).width( svgWidth );
-                                    bookworm.ui.drawLineGauge( svgId, svgWidth, point, 'right' );
+                                    bookworm.ui.drawLineGauge( summarySvgId, summarySvgWidth, point, 'right' );
                                 });
                         });
                         $( '#marketComparison' )
@@ -269,6 +272,7 @@ noToc: true
 
             // Show Ajax Error
             function displayAjaxError( thrownMessage ) {
+                $( '#message' ).hide();
                 alert(thrownMessage.responseJSON.message);
             }
 
