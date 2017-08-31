@@ -1,6 +1,6 @@
 # Dependencies
 markdown:            redcarpet
-highlighter:         pygments
+#highlighter:         pygments
 redcarpet:
   extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "strikethrough", "superscript", "with_toc_data"]
 
@@ -8,7 +8,7 @@ redcarpet:
 #
 # Use of `relative_permalinks` ensures post links from the index work properly.
 permalink:           pretty
-relative_permalinks: true
+#relative_permalinks: true
 
 # Setup
 title:               Bookworm
@@ -34,3 +34,6 @@ google_analytics:    UA-34915921-3
 minItemsToShowToc:   0
 anchorPrefix:        toc-
 showToggleButton:    false
+
+# Plugins
+plugins: ["jekyll-paginate"]
