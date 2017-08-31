@@ -223,7 +223,11 @@ noToc: true
                     });
 
                 // Populate Word Frequency Table
-                $.each( analysisResults.word_frequency, function( index, value ) {
+                sorted_word_frequency = analysisResults.word_frequency.sort(function(a,b) {
+                            // Sorts in reverse
+                            return parseInt(b.count) - parseInt(a.count)
+                    });
+                $.each( sorted_word_frequency, function( index, value ) {
                     word_pct = ( value.count / analysisResults.word_count ) * 100;
                     $( '#wordFrequencyTableBody' ).append(
                         "<tr id=\"wordcount-" + value.word + "\">" +
@@ -240,14 +244,17 @@ noToc: true
                     pov_total = analysisResults.pov_indicator_frequency[pov].total_frequency
                     grand_total = analysisResults.pov_indicator_frequency.grand_total_frequency
                     pov_pct = ( pov_total / grand_total ) * 100;
+                    sorted_indicator_frequency = analysisResults.pov_indicator_frequency[pov].indicator_frequency.sort(function(a,b) {
+                            return (a.word > b.word) - (a.word < b.word);
+                        });
 
-                    $.each( analysisResults.pov_indicator_frequency[pov].indicator_frequency, function( word, count ) {
-                        word_pct = ( count / grand_total ) * 100;
+                    $.each( sorted_indicator_frequency, function( index, value ) {
+                        word_pct = ( value.count / grand_total ) * 100;
                         $( '#povFrequencyTableBody' ).append(
-                            "<tr id=\"pov-" + word + "\">" +
+                            "<tr id=\"pov-" + value.word + "\">" +
                             "<td>" + pov + "</td>" +
-                            "<td class=\"text-right\">" + word + "</td>" +
-                            "<td class=\"text-right\">" + count + "</td>" +
+                            "<td class=\"text-right\">" + value.word + "</td>" +
+                            "<td class=\"text-right\">" + value.count + "</td>" +
                             "<td class=\"text-right\">" +
                             Number( word_pct ).toFixed( 4 ) + " %</td>" +
                             "</tr>"
