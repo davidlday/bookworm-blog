@@ -15,7 +15,7 @@ title:               Bookworm
 tagline:             'textual experimentation'
 description:         'An exploration of text analytics and fiction.'
 url:                 http://bookworm.davidlday.com
-baseurl:             /
+baseurl:             
 paginate:            5
 disqus_shortname:    bookworm-analytics
 
