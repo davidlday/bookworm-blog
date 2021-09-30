@@ -1,5 +1,5 @@
 # Dependencies
-markdown:            kramdown
+markdown: kramdown
 # highlighter:         pygments
 # redcarpet:
 #   extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "strikethrough", "superscript", "with_toc_data"]
@@ -7,33 +7,33 @@ markdown:            kramdown
 # Permalinks
 #
 # Use of `relative_permalinks` ensures post links from the index work properly.
-permalink:           pretty
+permalink: pretty
 #relative_permalinks: true
 
 # Setup
-title:               Bookworm
-tagline:             'textual experimentation'
-description:         'An exploration of text analytics and fiction.'
-url:                 http://bookworm.davidlday.com
-baseurl:             
-paginate:            5
-disqus_shortname:    bookworm-analytics
+title: Bookworm
+tagline: "textual experimentation"
+description: "An exploration of text analytics and fiction."
+url: http://bookworm.davidlday.com
+baseurl:
+paginate: 5
+disqus_shortname: bookworm-analytics
 
 # About/contact
 author:
-  name:              David L. Day
-  url:               https://twitter.com/dday376
-  email:             david@davidlday.com
+  name: David L. Day
+  url: https://twitter.com/dday376
+  email: david@davidlday.com
 
 # Custom vars
-version:             0.0.1
-google_analytics:    UA-34915921-3
+version: 0.0.1
+google_analytics: UA-34915921-3
 
 # jekyll-toc-generator options
 # https://github.com/dafi/jekyll-toc-generator
-minItemsToShowToc:   0
-anchorPrefix:        toc-
-showToggleButton:    false
+minItemsToShowToc: 0
+anchorPrefix: toc-
+showToggleButton: false
 
 # Plugins
 plugins: ["jekyll-paginate"]
@@ -51,3 +51,6 @@ kramdown:
     tab_width: 4
     bold_every: 10
     css: class
+
+# https://github.com/github/pages-gem/issues/399
+github: [metadata]
